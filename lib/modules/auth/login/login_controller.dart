@@ -8,7 +8,7 @@ import '../../../routes/app_routes.dart';
 class LoginController extends GetxController {
   final StorageService _storageService = Get.find();
 
-  final emailController = TextEditingController();
+  final npkController = TextEditingController();
   final passwordController = TextEditingController();
 
   final isLoading = false.obs;
@@ -17,7 +17,7 @@ class LoginController extends GetxController {
 
   @override
   void onClose() {
-    emailController.dispose();
+    npkController.dispose();
     passwordController.dispose();
     super.onClose();
   }
@@ -50,7 +50,7 @@ class LoginController extends GetxController {
       final userData = {
         'id': '1',
         'name': selectedRole.value == 'admin' ? 'Admin User' : 'Employee User',
-        'email': emailController.text,
+        'npk': npkController.text,
         'role': selectedRole.value,
       };
 
@@ -88,19 +88,10 @@ class LoginController extends GetxController {
   }
 
   bool _validateInputs() {
-    if (emailController.text.isEmpty) {
+    if (npkController.text.isEmpty) {
       Get.snackbar(
         'Error',
-        'Email ${AppStrings.errorFieldRequired.toLowerCase()}',
-        snackPosition: SnackPosition.BOTTOM,
-      );
-      return false;
-    }
-
-    if (!Helpers.isValidEmail(emailController.text)) {
-      Get.snackbar(
-        'Error',
-        AppStrings.errorInvalidEmail,
+        'NPK wajib diisi',
         snackPosition: SnackPosition.BOTTOM,
       );
       return false;

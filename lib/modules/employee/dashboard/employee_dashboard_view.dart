@@ -9,163 +9,85 @@ class EmployeeDashboardView extends GetView<EmployeeDashboardController> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Dashboard Karyawan'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.logout),
-            onPressed: controller.logout,
-          ),
-        ],
-      ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
+      backgroundColor: Colors.white,
+      body: SafeArea(
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Greeting Card
-            Card(
-              child: Padding(
-                padding: const EdgeInsets.all(16),
-                child: Row(
-                  children: [
-                    CircleAvatar(
-                      radius: 30,
-                      backgroundColor: AppColors.primary,
-                      child: const Icon(
-                        Icons.person,
-                        color: AppColors.textWhite,
-                        size: 30,
-                      ),
+            // Header
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+              child: Row(
+                children: [
+                  IconButton(
+                    icon: const Icon(Icons.arrow_back, size: 28),
+                    onPressed: () {
+                      // Handle back navigation
+                      // If this is the main dashboard, maybe it shows a dialog or exits
+                      // For now, we follow the wireframe.
+                      Get.back(); 
+                    },
+                    color: Colors.black,
+                  ),
+                  const SizedBox(width: 8),
+                  const Text(
+                    'Pilih Absensi',
+                    style: TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black,
                     ),
-                    const SizedBox(width: 16),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Obx(() => Text(
-                                controller.greeting.value,
-                                style: const TextStyle(
-                                  fontSize: 14,
-                                  color: AppColors.textSecondary,
-                                ),
-                              )),
-                          const SizedBox(height: 4),
-                          Obx(() => Text(
-                                controller.userName.value,
-                                style: const TextStyle(
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              )),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
+                  ),
+                ],
               ),
             ),
-            const SizedBox(height: 24),
+            
+            // Body - Cards
+            Expanded(
+              child: ListView(
+                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+                children: [
+                  _buildAbsensiCard(
+                    icon: Icons.check_circle_outline,
+                    label: 'Hadir',
+                    onTap: () {
+                      // Navigate to Present/Camera page
+                    },
+                  ),
+                  const SizedBox(height: 20),
+                  
+                  _buildAbsensiCard(
+                    icon: Icons.access_time, // Or update icon to better match "Clock"
+                    label: 'Izin',
+                    onTap: () {
+                      // Navigate to Permission page
+                    },
+                  ),
+                  const SizedBox(height: 20),
+                  
+                  _buildAbsensiCard(
+                    icon: Icons.local_hospital_outlined, // Medical/Person icon
+                    label: 'Sakit',
+                    onTap: () {
+                      // Navigate to Sick page
+                    },
+                  ),
+                ],
+              ),
+            ),
 
-            // Attendance Status Card
-            Card(
-              color: AppColors.primary,
-              child: Padding(
-                padding: const EdgeInsets.all(16),
-                child: Column(
-                  children: [
-                    const Text(
-                      'Status Absensi Hari Ini',
-                      style: TextStyle(
-                        color: AppColors.textWhite,
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceAround,
-                      children: [
-                        _buildStatusItem(
-                          icon: Icons.login,
-                          label: 'Masuk',
-                          time: '--:--',
-                        ),
-                        Container(
-                          height: 40,
-                          width: 1,
-                          color: AppColors.textWhite.withOpacity(0.3),
-                        ),
-                        _buildStatusItem(
-                          icon: Icons.logout,
-                          label: 'Keluar',
-                          time: '--:--',
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 16),
-                    ElevatedButton.icon(
-                      onPressed: () {
-                        // TODO: Navigate to attendance page
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.textWhite,
-                        foregroundColor: AppColors.primary,
-                      ),
-                      icon: const Icon(Icons.fingerprint),
-                      label: const Text('Absen Sekarang'),
-                    ),
-                  ],
+            // Footer
+            Container(
+              padding: const EdgeInsets.all(16),
+              color: Colors.grey[300],
+              width: double.infinity,
+              alignment: Alignment.center,
+              child: const Text(
+                '@2026 Perhutani Padangan',
+                style: TextStyle(
+                  color: Colors.black87,
+                  fontSize: 12,
                 ),
               ),
-            ),
-            const SizedBox(height: 24),
-
-            // Menu Grid
-            const Text(
-              'Menu',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            const SizedBox(height: 16),
-            GridView.count(
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              crossAxisCount: 2,
-              mainAxisSpacing: 16,
-              crossAxisSpacing: 16,
-              children: [
-                _buildMenuCard(
-                  icon: Icons.history,
-                  title: 'Riwayat Absensi',
-                  onTap: () {
-                    // TODO: Navigate to history
-                  },
-                ),
-                _buildMenuCard(
-                  icon: Icons.person,
-                  title: 'Profil',
-                  onTap: () {
-                    // TODO: Navigate to profile
-                  },
-                ),
-                _buildMenuCard(
-                  icon: Icons.calendar_today,
-                  title: 'Kalender',
-                  onTap: () {
-                    // TODO: Navigate to calendar
-                  },
-                ),
-                _buildMenuCard(
-                  icon: Icons.settings,
-                  title: 'Pengaturan',
-                  onTap: () {
-                    // TODO: Navigate to settings
-                  },
-                ),
-              ],
             ),
           ],
         ),
@@ -173,68 +95,69 @@ class EmployeeDashboardView extends GetView<EmployeeDashboardController> {
     );
   }
 
-  Widget _buildStatusItem({
+  Widget _buildAbsensiCard({
     required IconData icon,
     required String label,
-    required String time,
-  }) {
-    return Column(
-      children: [
-        Icon(
-          icon,
-          color: AppColors.textWhite,
-          size: 32,
-        ),
-        const SizedBox(height: 8),
-        Text(
-          label,
-          style: const TextStyle(
-            color: AppColors.textWhite,
-            fontSize: 12,
-          ),
-        ),
-        const SizedBox(height: 4),
-        Text(
-          time,
-          style: const TextStyle(
-            color: AppColors.textWhite,
-            fontSize: 18,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildMenuCard({
-    required IconData icon,
-    required String title,
     required VoidCallback onTap,
   }) {
-    return Card(
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(12),
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(
-                icon,
-                size: 48,
-                color: AppColors.primary,
-              ),
-              const SizedBox(height: 12),
-              Text(
-                title,
-                textAlign: TextAlign.center,
-                style: const TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w600,
+    return Container(
+      height: 120, // Approximate height from wireframe
+      decoration: BoxDecoration(
+        color: Colors.grey[300], // Matches wireframe gray background
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(16),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 24),
+            child: Row(
+              children: [
+                // Icon Circle
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    border: Border.all(color: Colors.grey[500]!, width: 3),
+                    // color: Colors.grey[400], // Inner circle color if needed
+                  ),
+                  child: Icon(
+                    icon,
+                    size: 32,
+                    color: Colors.grey[600], // Icon color
+                  ),
                 ),
-              ),
-            ],
+                const SizedBox(width: 24),
+                
+                // Text
+                Expanded(
+                  child: Text(
+                    label,
+                    style: const TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.w500,
+                      color: Colors.black87,
+                    ),
+                  ),
+                ),
+                
+                // Arrow
+                Icon(
+                  Icons.arrow_forward_ios,
+                  size: 32,
+                  color: Colors.grey[500],
+                ),
+              ],
+            ),
           ),
         ),
       ),
