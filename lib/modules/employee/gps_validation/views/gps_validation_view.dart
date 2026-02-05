@@ -73,7 +73,7 @@ class GpsValidationView extends GetView<GpsValidationController> {
                                       shape: BoxShape.circle,
                                       boxShadow: [
                                         BoxShadow(
-                                          color: Colors.black.withOpacity(0.2),
+                                          color: Colors.black.withValues(alpha:0.2),
                                           blurRadius: 10,
                                           offset: const Offset(0, 4),
                                         ),
@@ -99,7 +99,7 @@ class GpsValidationView extends GetView<GpsValidationController> {
                             // Loading indicator
                             Obx(() => controller.isLoading.value
                                 ? Container(
-                                    color: Colors.white.withOpacity(0.7),
+                                    color: Colors.white.withValues(alpha:0.7),
                                     child: const Center(
                                       child: CircularProgressIndicator(),
                                     ),
@@ -115,7 +115,7 @@ class GpsValidationView extends GetView<GpsValidationController> {
                                   borderRadius: BorderRadius.circular(8),
                                   boxShadow: [
                                     BoxShadow(
-                                      color: Colors.black.withOpacity(0.1),
+                                      color: Colors.black.withValues(alpha:0.1),
                                       blurRadius: 8,
                                     ),
                                   ],

@@ -84,7 +84,7 @@ class HistoryView extends GetView<HistoryController> {
                           label: Text(filter),
                           selected: isSelected,
                           onSelected: (selected) => controller.setFilter(filter),
-                          selectedColor: AppColors.primary.withOpacity(0.2),
+                          selectedColor: AppColors.primary.withValues(alpha:0.2),
                           checkmarkColor: AppColors.primary,
                           labelStyle: TextStyle(
                             color: isSelected ? AppColors.primary : Colors.black87,
@@ -170,7 +170,7 @@ class HistoryView extends GetView<HistoryController> {
         border: Border.all(color: Colors.grey[200]!),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha:0.05),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),
@@ -224,7 +224,7 @@ class HistoryView extends GetView<HistoryController> {
         border: Border.all(color: Colors.grey[200]!),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.03),
+            color: Colors.black.withValues(alpha:0.03),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),
@@ -270,9 +270,9 @@ class HistoryView extends GetView<HistoryController> {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
             decoration: BoxDecoration(
-              color: statusColor.withOpacity(0.1),
+              color: statusColor.withValues(alpha:0.1),
               borderRadius: BorderRadius.circular(20),
-              border: Border.all(color: statusColor.withOpacity(0.5)),
+              border: Border.all(color: statusColor.withValues(alpha:0.5)),
             ),
             child: Text(
               attendance['status'],

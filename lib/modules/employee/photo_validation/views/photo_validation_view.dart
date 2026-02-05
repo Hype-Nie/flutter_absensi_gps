@@ -125,7 +125,7 @@ class PhotoValidationView extends GetView<PhotoValidationController> {
                             // Loading overlay
                             Obx(() => controller.isLoading.value
                                 ? Container(
-                                    color: Colors.black.withOpacity(0.5),
+                                    color: Colors.black.withValues(alpha:0.5),
                                     child: const Center(
                                       child: CircularProgressIndicator(
                                         color: Colors.white,
@@ -169,7 +169,7 @@ class PhotoValidationView extends GetView<PhotoValidationController> {
                         return Container(
                           padding: const EdgeInsets.all(12),
                           decoration: BoxDecoration(
-                            color: Colors.orange.withOpacity(0.1),
+                            color: Colors.orange.withValues(alpha:0.1),
                             borderRadius: BorderRadius.circular(8),
                             border: Border.all(color: Colors.orange),
                           ),

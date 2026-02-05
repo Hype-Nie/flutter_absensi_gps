@@ -25,7 +25,7 @@ class AttendanceSuccessView extends GetView<AttendanceSuccessController> {
                       height: 100,
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
-                        color: AppColors.success.withOpacity(0.1),
+                        color: AppColors.success.withValues(alpha: 0.1),
                         border: Border.all(
                           color: AppColors.success,
                           width: 3,

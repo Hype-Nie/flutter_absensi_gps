@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../../../core/utils/helpers.dart';
-import '../../../../data/services/storage_service.dart';
+import '../../../../data/services/auth_service.dart';
 import '../../../../routes/app_routes.dart';
 
 class EmployeeDashboardController extends GetxController {
-  final StorageService _storageService = Get.find();
+  final AuthService _authService = Get.find<AuthService>();
 
   final greeting = ''.obs;
   final userName = ''.obs;
@@ -25,9 +25,16 @@ class EmployeeDashboardController extends GetxController {
   }
 
   void _loadUserData() {
-    final userData = _storageService.getUser();
-    if (userData != null) {
-      userName.value = userData['name'] ?? 'Karyawan';
+    // Observe user changes
+    ever(_authService.currentUser, (user) {
+      if (user != null) {
+        userName.value = user.name;
+      }
+    });
+
+    // Initial load
+    if (_authService.currentUser.value != null) {
+      userName.value = _authService.currentUser.value!.name;
     }
   }
 
@@ -91,7 +98,7 @@ class EmployeeDashboardController extends GetxController {
           ),
           TextButton(
             onPressed: () async {
-              await _storageService.clearAll();
+              await _authService.logout();
               Get.offAllNamed(AppRoutes.login);
             },
             child: const Text('Keluar', style: TextStyle(color: Colors.red)),

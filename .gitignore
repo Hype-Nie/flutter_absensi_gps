@@ -32,6 +32,7 @@ migrate_working_dir/
 .pub/
 /build/
 /coverage/
+CONTEXT.md
 
 # Symbolication related
 app.*.symbols
