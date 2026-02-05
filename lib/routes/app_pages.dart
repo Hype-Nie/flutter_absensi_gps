@@ -1,12 +1,12 @@
 import 'package:get/get.dart';
-import '../modules/splash/splash_binding.dart';
-import '../modules/splash/splash_view.dart';
-import '../modules/auth/login/login_binding.dart';
-import '../modules/auth/login/login_view.dart';
-import '../modules/employee/dashboard/employee_dashboard_binding.dart';
-import '../modules/employee/dashboard/employee_dashboard_view.dart';
-import '../modules/admin/dashboard/admin_dashboard_binding.dart';
-import '../modules/admin/dashboard/admin_dashboard_view.dart';
+import '../modules/splash/bindings/splash_binding.dart';
+import '../modules/splash/views/splash_view.dart';
+import '../modules/auth/login/bindings/login_binding.dart';
+import '../modules/auth/login/views/login_view.dart';
+import '../modules/employee/dashboard/bindings/employee_dashboard_binding.dart';
+import '../modules/employee/dashboard/views/employee_dashboard_view.dart';
+import '../modules/admin/dashboard/bindings/admin_dashboard_binding.dart';
+import '../modules/admin/dashboard/views/admin_dashboard_view.dart';
 import 'app_routes.dart';
 
 class AppPages {
