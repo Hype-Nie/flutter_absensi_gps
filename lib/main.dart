@@ -6,6 +6,7 @@ import 'package:flutter_easyloading/flutter_easyloading.dart';
 
 import 'core/theme/app_theme.dart';
 import 'core/constants/app_strings.dart';
+import 'core/utils/logger.dart';
 import 'data/services/storage_service.dart';
 import 'data/services/location_service.dart';
 import 'data/providers/api_provider.dart';
@@ -14,11 +15,15 @@ import 'routes/app_pages.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   
+  AppLogger.info('App: Initializing...');
+  
   // Initialize GetStorage
   await GetStorage.init();
+  AppLogger.info('App: GetStorage initialized');
   
   // Initialize services
   await _initServices();
+  AppLogger.info('App: Services initialized');
   
   // Set preferred orientations
   await SystemChrome.setPreferredOrientations([
@@ -33,10 +38,22 @@ void main() async {
 }
 
 Future<void> _initServices() async {
-  // Initialize core services
-  Get.put(StorageService());
-  Get.put(LocationService());
-  Get.put(ApiProvider());
+  try {
+    // Initialize core services
+    AppLogger.info('App: Initializing StorageService...');
+    Get.put(StorageService());
+    
+    AppLogger.info('App: Initializing LocationService...');
+    Get.put(LocationService());
+    
+    AppLogger.info('App: Initializing ApiProvider...');
+    Get.put(ApiProvider());
+    
+    AppLogger.info('App: All services initialized successfully');
+  } catch (e, stackTrace) {
+    AppLogger.error('App: Error initializing services', e, stackTrace);
+    rethrow;
+  }
 }
 
 void _configureEasyLoading() {
