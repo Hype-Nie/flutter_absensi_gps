@@ -1,7 +1,11 @@
 import 'package:get_storage/get_storage.dart';
 
 class StorageService {
-  final GetStorage _storage = GetStorage();
+  late final GetStorage _storage;
+
+  StorageService() {
+    _storage = GetStorage();
+  }
 
   // Keys
   static const String keyToken = 'token';
