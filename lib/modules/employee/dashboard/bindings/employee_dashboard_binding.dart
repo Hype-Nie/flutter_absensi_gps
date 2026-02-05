@@ -1,5 +1,5 @@
 import 'package:get/get.dart';
-import 'employee_dashboard_controller.dart';
+import '../controllers/employee_dashboard_controller.dart';
 
 class EmployeeDashboardBinding extends Bindings {
   @override

@@ -1,7 +1,7 @@
 import 'package:get/get.dart';
-import '../../data/services/storage_service.dart';
-import '../../routes/app_routes.dart';
-import '../../core/utils/logger.dart';
+import '../../../data/services/storage_service.dart';
+import '../../../routes/app_routes.dart';
+import '../../../core/utils/logger.dart';
 
 class SplashController extends GetxController {
   StorageService? _storageService;
