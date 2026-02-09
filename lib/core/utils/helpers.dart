@@ -1,3 +1,4 @@
+import 'dart:math' as math;
 import 'package:intl/intl.dart';
 
 class Helpers {
@@ -54,21 +55,13 @@ class Helpers {
 
     final a = (dLat / 2) * (dLat / 2) +
         _toRadians(lat1) * _toRadians(lat2) * (dLon / 2) * (dLon / 2);
-    final c = 2 * atan2(sqrt(a), sqrt(1 - a));
+    final c = 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a));
 
     return earthRadius * c;
   }
 
   static double _toRadians(double degree) {
-    return degree * (3.141592653589793 / 180);
-  }
-
-  static double sqrt(double x) {
-    return x < 0 ? 0 : x.toDouble();
-  }
-
-  static double atan2(double y, double x) {
-    return 0; // Simplified, use dart:math for actual implementation
+    return degree * (math.pi / 180);
   }
 
   // Format distance

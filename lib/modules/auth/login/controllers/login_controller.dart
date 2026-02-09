@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../../../core/constants/app_strings.dart';
 import '../../../../core/utils/helpers.dart';
-import '../../../../data/models/user_model.dart';
 import '../../../../data/services/auth_service.dart';
 import '../../../../routes/app_routes.dart';
+import '../../../../core/constants/app_colors.dart';
 
 class LoginController extends GetxController {
   final AuthService _authService = Get.find<AuthService>();
@@ -44,8 +44,8 @@ class LoginController extends GetxController {
         'Success',
         AppStrings.successLogin,
         snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.green,
-        colorText: Colors.white,
+        backgroundColor: AppColors.success,
+        colorText: AppColors.textWhite,
         duration: const Duration(seconds: 2),
       );
 
@@ -65,8 +65,8 @@ class LoginController extends GetxController {
         'Login Gagal',
         errorMessage,
         snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.red,
-        colorText: Colors.white,
+        backgroundColor: AppColors.error,
+        colorText: AppColors.textWhite,
         duration: const Duration(seconds: 3),
       );
     } finally {
@@ -80,8 +80,8 @@ class LoginController extends GetxController {
         'Error',
         'NPK wajib diisi',
         snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.red,
-        colorText: Colors.white,
+        backgroundColor: AppColors.error,
+        colorText: AppColors.textWhite,
       );
       return false;
     }
@@ -91,8 +91,8 @@ class LoginController extends GetxController {
         'Error',
         'Password ${AppStrings.errorFieldRequired.toLowerCase()}',
         snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.red,
-        colorText: Colors.white,
+        backgroundColor: AppColors.error,
+        colorText: AppColors.textWhite,
       );
       return false;
     }
@@ -102,8 +102,8 @@ class LoginController extends GetxController {
         'Error',
         AppStrings.errorPasswordTooShort,
         snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.red,
-        colorText: Colors.white,
+        backgroundColor: AppColors.error,
+        colorText: AppColors.textWhite,
       );
       return false;
     }

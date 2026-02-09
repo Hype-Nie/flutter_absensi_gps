@@ -9,7 +9,7 @@ class HistoryView extends GetView<HistoryController> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: AppColors.surface,
       body: SafeArea(
         child: Column(
           children: [
@@ -21,7 +21,7 @@ class HistoryView extends GetView<HistoryController> {
                   IconButton(
                     icon: const Icon(Icons.arrow_back, size: 28),
                     onPressed: () => Get.back(),
-                    color: Colors.black,
+                    color: AppColors.textPrimary,
                   ),
                   const SizedBox(width: 8),
                   const Expanded(
@@ -30,7 +30,7 @@ class HistoryView extends GetView<HistoryController> {
                       style: TextStyle(
                         fontSize: 22,
                         fontWeight: FontWeight.bold,
-                        color: Colors.black,
+                        color: AppColors.textPrimary,
                         height: 1.2,
                       ),
                     ),
@@ -87,13 +87,13 @@ class HistoryView extends GetView<HistoryController> {
                           selectedColor: AppColors.primary.withValues(alpha:0.2),
                           checkmarkColor: AppColors.primary,
                           labelStyle: TextStyle(
-                            color: isSelected ? AppColors.primary : Colors.black87,
+                            color: isSelected ? AppColors.primary : AppColors.grey600,
                             fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
                           ),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(20),
                             side: BorderSide(
-                              color: isSelected ? AppColors.primary : Colors.grey[300]!,
+                              color: isSelected ? AppColors.primary : AppColors.grey300,
                             ),
                           ),
                         );
@@ -104,16 +104,16 @@ class HistoryView extends GetView<HistoryController> {
                     // Search Bar
                     Container(
                       decoration: BoxDecoration(
-                        color: Colors.grey[100],
+                        color: AppColors.grey100,
                         borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: Colors.grey[300]!),
+                        border: Border.all(color: AppColors.grey300),
                       ),
                       child: TextField(
                         onChanged: controller.onSearch,
                         decoration: InputDecoration(
                           hintText: 'Cari',
-                          hintStyle: TextStyle(color: Colors.grey[400]),
-                          prefixIcon: Icon(Icons.search, color: Colors.grey[400]),
+                          hintStyle: const TextStyle(color: AppColors.grey400),
+                          prefixIcon: const Icon(Icons.search, color: AppColors.grey400),
                           border: InputBorder.none,
                           contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
                         ),
@@ -140,13 +140,13 @@ class HistoryView extends GetView<HistoryController> {
             // Footer
             Container(
               padding: const EdgeInsets.all(16),
-              color: Colors.grey[300],
+              color: AppColors.grey300,
               width: double.infinity,
               alignment: Alignment.center,
               child: const Text(
                 '@2026 Perhutani Padangan',
                 style: TextStyle(
-                  color: Colors.black87,
+                  color: AppColors.grey600,
                   fontSize: 12,
                 ),
               ),
@@ -165,12 +165,12 @@ class HistoryView extends GetView<HistoryController> {
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppColors.surface,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.grey[200]!),
+        border: Border.all(color: AppColors.grey200),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha:0.05),
+            color: AppColors.shadow.withValues(alpha: 0.05),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),
@@ -191,7 +191,7 @@ class HistoryView extends GetView<HistoryController> {
             label,
             style: TextStyle(
               fontSize: 13,
-              color: Colors.grey[600],
+              color: AppColors.grey600,
             ),
           ),
         ],
@@ -212,19 +212,19 @@ class HistoryView extends GetView<HistoryController> {
         statusColor = AppColors.warning;
         break;
       default:
-        statusColor = Colors.grey;
+        statusColor = AppColors.grey600;
     }
 
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppColors.surface,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.grey[200]!),
+        border: Border.all(color: AppColors.grey200),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha:0.03),
+            color: AppColors.shadow.withValues(alpha: 0.03),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),
@@ -237,10 +237,10 @@ class HistoryView extends GetView<HistoryController> {
             width: 50,
             height: 50,
             decoration: BoxDecoration(
-              color: Colors.grey[300],
+              color: AppColors.grey300,
               borderRadius: BorderRadius.circular(8),
             ),
-            child: Icon(Icons.person, color: Colors.grey[500]),
+            child: Icon(Icons.person, color: AppColors.grey500),
           ),
           const SizedBox(width: 16),
           Expanded(
@@ -252,7 +252,7 @@ class HistoryView extends GetView<HistoryController> {
                   style: const TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.w600,
-                    color: Colors.black87,
+                    color: AppColors.grey600,
                   ),
                 ),
                 const SizedBox(height: 4),

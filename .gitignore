@@ -34,6 +34,8 @@ migrate_working_dir/
 /build/
 /coverage/
 CONTEXT.md
+.claude/
+CLAUDE.md
 
 # Symbolication related
 app.*.symbols

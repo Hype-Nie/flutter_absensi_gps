@@ -75,20 +75,20 @@ class AttendanceSuccessView extends GetView<AttendanceSuccessController> {
                             style: TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.w600,
-                              color: Colors.black87,
+                              color: AppColors.grey600,
                             ),
                           ),
                           Container(
                             width: 50,
                             height: 50,
                             decoration: BoxDecoration(
-                              color: Colors.grey[200],
+                              color: AppColors.grey200,
                               borderRadius: BorderRadius.circular(8),
-                              border: Border.all(color: Colors.grey[300]!),
+                              border: Border.all(color: AppColors.grey300),
                             ),
                             child: Icon(
                               Icons.camera_alt_outlined,
-                              color: Colors.grey[600],
+                              color: AppColors.grey600,
                               size: 28,
                             ),
                           ),
@@ -104,7 +104,7 @@ class AttendanceSuccessView extends GetView<AttendanceSuccessController> {
                         onPressed: controller.goToDashboard,
                         style: ElevatedButton.styleFrom(
                           backgroundColor: AppColors.primary,
-                          foregroundColor: Colors.white,
+                          foregroundColor: AppColors.textWhite,
                           padding: const EdgeInsets.symmetric(vertical: 16),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(12),

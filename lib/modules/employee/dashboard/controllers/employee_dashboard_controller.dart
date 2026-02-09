@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import '../../../../core/utils/helpers.dart';
 import '../../../../data/services/auth_service.dart';
 import '../../../../routes/app_routes.dart';
+import '../../../../core/constants/app_colors.dart';
 
 class EmployeeDashboardController extends GetxController {
   final AuthService _authService = Get.find<AuthService>();
@@ -101,7 +102,7 @@ class EmployeeDashboardController extends GetxController {
               await _authService.logout();
               Get.offAllNamed(AppRoutes.login);
             },
-            child: const Text('Keluar', style: TextStyle(color: Colors.red)),
+            child: const Text('Keluar', style: TextStyle(color: AppColors.error)),
           ),
         ],
       ),

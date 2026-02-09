@@ -33,8 +33,9 @@ class SplashController extends GetxController {
           e,
           null,
         );
-        _storageService = StorageService();
-        Get.put(_storageService!);
+        final storageService = StorageService();
+        _storageService = storageService;
+        Get.put(storageService);
       }
 
       // Wait for 2 seconds for better UX

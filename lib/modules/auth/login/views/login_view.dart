@@ -9,7 +9,7 @@ class LoginView extends GetView<LoginController> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: AppColors.surface,
       body: SafeArea(
         child: Column(
           children: [
@@ -26,7 +26,7 @@ class LoginView extends GetView<LoginController> {
                       style: TextStyle(
                         fontSize: 32,
                         fontWeight: FontWeight.w900, // Extra Bold
-                        color: Colors.black,
+                        color: AppColors.textPrimary,
                       ),
                     ),
                     const SizedBox(height: 60),
@@ -36,11 +36,11 @@ class LoginView extends GetView<LoginController> {
                       child: Container(
                         width: 150,
                         height: 150,
-                        color: Colors.grey[300], // Placeholder color
+                        color: AppColors.border, // Placeholder color
                         alignment: Alignment.center,
                         child: const Text(
                           'Logo Apps',
-                          style: TextStyle(color: Colors.black54),
+                          style: TextStyle(color: AppColors.textSecondary),
                         ),
                       ),
                     ),
@@ -53,7 +53,7 @@ class LoginView extends GetView<LoginController> {
                       style: TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
-                        color: Colors.black,
+                        color: AppColors.textPrimary,
                       ),
                     ),
                     const SizedBox(height: 60),
@@ -64,6 +64,7 @@ class LoginView extends GetView<LoginController> {
                       style: TextStyle(
                         fontWeight: FontWeight.w600,
                         fontSize: 14,
+                        color: AppColors.textPrimary,
                       ),
                     ),
                     const SizedBox(height: 8),
@@ -71,18 +72,18 @@ class LoginView extends GetView<LoginController> {
                       controller: controller.npkController,
                       decoration: InputDecoration(
                         hintText: 'NPK',
-                        hintStyle: TextStyle(color: Colors.grey[400]),
+                        hintStyle: const TextStyle(color: AppColors.textHint),
                         contentPadding: const EdgeInsets.symmetric(
                           horizontal: 16,
                           vertical: 16,
                         ),
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(8),
-                          borderSide: BorderSide(color: Colors.grey[300]!),
+                          borderSide: const BorderSide(color: AppColors.border),
                         ),
                         enabledBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(8),
-                          borderSide: BorderSide(color: Colors.grey[300]!),
+                          borderSide: const BorderSide(color: AppColors.border),
                         ),
                       ),
                     ),
@@ -94,6 +95,7 @@ class LoginView extends GetView<LoginController> {
                       style: TextStyle(
                         fontWeight: FontWeight.w600,
                         fontSize: 14,
+                        color: AppColors.textPrimary,
                       ),
                     ),
                     const SizedBox(height: 8),
@@ -103,18 +105,18 @@ class LoginView extends GetView<LoginController> {
                         obscureText: !controller.isPasswordVisible.value,
                         decoration: InputDecoration(
                           hintText: 'Password',
-                          hintStyle: TextStyle(color: Colors.grey[400]),
+                          hintStyle: const TextStyle(color: AppColors.textHint),
                           contentPadding: const EdgeInsets.symmetric(
                             horizontal: 16,
                             vertical: 16,
                           ),
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(8),
-                            borderSide: BorderSide(color: Colors.grey[300]!),
+                            borderSide: const BorderSide(color: AppColors.border),
                           ),
                           enabledBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(8),
-                            borderSide: BorderSide(color: Colors.grey[300]!),
+                            borderSide: const BorderSide(color: AppColors.border),
                           ),
                           // Assuming no icon in wireframe, but keeping visibility toggle for UX might be good.
                           // Wireframe just shows plain text field. I'll omit the icon to be strict to wireframe
@@ -125,7 +127,7 @@ class LoginView extends GetView<LoginController> {
                               controller.isPasswordVisible.value
                                   ? Icons.visibility_off
                                   : Icons.visibility,
-                              color: Colors.grey,
+                              color: AppColors.textSecondary,
                             ),
                             onPressed: controller.togglePasswordVisibility,
                           ),
@@ -142,7 +144,7 @@ class LoginView extends GetView<LoginController> {
                             : controller.login,
                         style: ElevatedButton.styleFrom(
                           backgroundColor: AppColors.primary, // Green
-                          foregroundColor: Colors.white,
+                          foregroundColor: AppColors.textWhite,
                           padding: const EdgeInsets.symmetric(vertical: 16),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(8),
@@ -155,7 +157,7 @@ class LoginView extends GetView<LoginController> {
                                 width: 24,
                                 child: CircularProgressIndicator(
                                   strokeWidth: 2,
-                                  color: Colors.white,
+                                  color: AppColors.textWhite,
                                 ),
                               )
                             : const Text(
@@ -179,7 +181,7 @@ class LoginView extends GetView<LoginController> {
               alignment: Alignment.center,
               child: const Text(
                 '@2026 Perhutani Padangan',
-                style: TextStyle(color: Colors.black87, fontSize: 12),
+                style: TextStyle(color: AppColors.textPrimary, fontSize: 12),
               ),
             ),
           ],
