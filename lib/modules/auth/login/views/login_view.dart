@@ -45,7 +45,7 @@ class LoginView extends GetView<LoginController> {
                       ),
                     ),
                     const SizedBox(height: 16),
-                    
+
                     // "Perhutani Padangan"
                     const Text(
                       'Perhutani Padangan',
@@ -73,7 +73,7 @@ class LoginView extends GetView<LoginController> {
                         hintText: 'NPK',
                         hintStyle: TextStyle(color: Colors.grey[400]),
                         contentPadding: const EdgeInsets.symmetric(
-                          horizontal: 16, 
+                          horizontal: 16,
                           vertical: 16,
                         ),
                         border: OutlineInputBorder(
@@ -97,89 +97,89 @@ class LoginView extends GetView<LoginController> {
                       ),
                     ),
                     const SizedBox(height: 8),
-                    Obx(() => TextField(
-                      controller: controller.passwordController,
-                      obscureText: !controller.isPasswordVisible.value,
-                      decoration: InputDecoration(
-                        hintText: 'Password',
-                        hintStyle: TextStyle(color: Colors.grey[400]),
-                        contentPadding: const EdgeInsets.symmetric(
-                          horizontal: 16, 
-                          vertical: 16,
-                        ),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(8),
-                          borderSide: BorderSide(color: Colors.grey[300]!),
-                        ),
-                        enabledBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(8),
-                          borderSide: BorderSide(color: Colors.grey[300]!),
-                        ),
-                        // Assuming no icon in wireframe, but keeping visibility toggle for UX might be good.
-                        // Wireframe just shows plain text field. I'll omit the icon to be strict to wireframe 
-                        // or add it subtly. I'll add it because it's standard UX, but keep it minimal.
-                        // User asked for "Modern UI", so a toggle is expected.
-                        suffixIcon: IconButton(
-                          icon: Icon(
-                            controller.isPasswordVisible.value
-                                ? Icons.visibility_off
-                                : Icons.visibility,
-                            color: Colors.grey,
+                    Obx(
+                      () => TextField(
+                        controller: controller.passwordController,
+                        obscureText: !controller.isPasswordVisible.value,
+                        decoration: InputDecoration(
+                          hintText: 'Password',
+                          hintStyle: TextStyle(color: Colors.grey[400]),
+                          contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 16,
                           ),
-                          onPressed: controller.togglePasswordVisibility,
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(8),
+                            borderSide: BorderSide(color: Colors.grey[300]!),
+                          ),
+                          enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(8),
+                            borderSide: BorderSide(color: Colors.grey[300]!),
+                          ),
+                          // Assuming no icon in wireframe, but keeping visibility toggle for UX might be good.
+                          // Wireframe just shows plain text field. I'll omit the icon to be strict to wireframe
+                          // or add it subtly. I'll add it because it's standard UX, but keep it minimal.
+                          // User asked for "Modern UI", so a toggle is expected.
+                          suffixIcon: IconButton(
+                            icon: Icon(
+                              controller.isPasswordVisible.value
+                                  ? Icons.visibility_off
+                                  : Icons.visibility,
+                              color: Colors.grey,
+                            ),
+                            onPressed: controller.togglePasswordVisibility,
+                          ),
                         ),
                       ),
-                    )),
+                    ),
                     const SizedBox(height: 40),
 
                     // Login Button
-                    Obx(() => ElevatedButton(
-                      onPressed: controller.isLoading.value
-                          ? null
-                          : controller.login,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.primary, // Green
-                        foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(vertical: 16),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8),
+                    Obx(
+                      () => ElevatedButton(
+                        onPressed: controller.isLoading.value
+                            ? null
+                            : controller.login,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColors.primary, // Green
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(vertical: 16),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          elevation: 0,
                         ),
-                        elevation: 0,
+                        child: controller.isLoading.value
+                            ? const SizedBox(
+                                height: 24,
+                                width: 24,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  color: Colors.white,
+                                ),
+                              )
+                            : const Text(
+                                'Login',
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
                       ),
-                      child: controller.isLoading.value
-                          ? const SizedBox(
-                              height: 24,
-                              width: 24,
-                              child: CircularProgressIndicator(
-                                strokeWidth: 2,
-                                color: Colors.white,
-                              ),
-                            )
-                          : const Text(
-                              'Login',
-                              style: TextStyle(
-                                fontSize: 16, 
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                    )),
+                    ),
                   ],
                 ),
               ),
             ),
-            
+
             // Footer
             Container(
               padding: const EdgeInsets.all(16),
-              color: Colors.grey[300], // Light gray background for footer
               width: double.infinity,
               alignment: Alignment.center,
               child: const Text(
                 '@2026 Perhutani Padangan',
-                style: TextStyle(
-                  color: Colors.black87,
-                  fontSize: 12,
-                ),
+                style: TextStyle(color: Colors.black87, fontSize: 12),
               ),
             ),
           ],

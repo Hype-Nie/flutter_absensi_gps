@@ -28,13 +28,13 @@ class EmployeeDashboardController extends GetxController {
     // Observe user changes
     ever(_authService.currentUser, (user) {
       if (user != null) {
-        userName.value = user.name;
+        userName.value = user.nama;
       }
     });
 
     // Initial load
     if (_authService.currentUser.value != null) {
-      userName.value = _authService.currentUser.value!.name;
+      userName.value = _authService.currentUser.value!.nama;
     }
   }
 
