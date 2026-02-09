@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../../../core/constants/app_colors.dart';
@@ -66,6 +67,7 @@ class AttendanceSuccessView extends GetView<AttendanceSuccessController> {
                     
                     // Foto Selfie Row
                     Obx(() {
+                      final localImage = controller.capturedImage.value;
                       final attendanceData = controller.attendanceData.value;
                       final imageUrl = attendanceData != null
                           ? (controller.isCheckIn.value
@@ -96,35 +98,36 @@ class AttendanceSuccessView extends GetView<AttendanceSuccessController> {
                               ),
                               child: ClipRRect(
                                 borderRadius: BorderRadius.circular(7),
-                                child: imageUrl != null
-                                    ? Image.network(
-                                        imageUrl,
+                                child: localImage != null
+                                    ? Image.file(
+                                        localImage,
                                         fit: BoxFit.cover,
-                                        errorBuilder: (context, error, stackTrace) {
-                                          return Icon(
-                                            Icons.broken_image,
+                                      )
+                                    : imageUrl != null
+                                        ? Image.network(
+                                            imageUrl,
+                                            fit: BoxFit.cover,
+                                            errorBuilder: (context, error, stackTrace) {
+                                              return const Icon(
+                                                Icons.broken_image,
+                                                color: AppColors.grey600,
+                                                size: 32,
+                                              );
+                                            },
+                                            loadingBuilder: (context, child, loadingProgress) {
+                                              if (loadingProgress == null) return child;
+                                              return const Center(
+                                                child: CircularProgressIndicator(
+                                                  strokeWidth: 2,
+                                                ),
+                                              );
+                                            },
+                                          )
+                                        : const Icon(
+                                            Icons.camera_alt_outlined,
                                             color: AppColors.grey600,
                                             size: 32,
-                                          );
-                                        },
-                                        loadingBuilder: (context, child, loadingProgress) {
-                                          if (loadingProgress == null) return child;
-                                          return Center(
-                                            child: CircularProgressIndicator(
-                                              value: loadingProgress.expectedTotalBytes != null
-                                                  ? loadingProgress.cumulativeBytesLoaded /
-                                                      loadingProgress.expectedTotalBytes!
-                                                  : null,
-                                              strokeWidth: 2,
-                                            ),
-                                          );
-                                        },
-                                      )
-                                    : Icon(
-                                        Icons.camera_alt_outlined,
-                                        color: AppColors.grey600,
-                                        size: 32,
-                                      ),
+                                          ),
                               ),
                             ),
                           ],

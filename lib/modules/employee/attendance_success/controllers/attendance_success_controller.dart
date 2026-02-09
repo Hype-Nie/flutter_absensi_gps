@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import '../../../../data/models/attendance_history_model.dart';
@@ -11,6 +12,7 @@ class AttendanceSuccessController extends GetxController {
   final status = 'Tepat Waktu'.obs;
   final lateDuration = Rxn<int>();
   final attendanceData = Rxn<AttendanceHistoryModel>();
+  final capturedImage = Rxn<File>();
 
   @override
   void onInit() {
@@ -18,6 +20,12 @@ class AttendanceSuccessController extends GetxController {
     final args = Get.arguments as Map<String, dynamic>?;
     attendanceType.value = args?['type'] ?? 'hadir';
     isCheckIn.value = args?['isCheckIn'] ?? true;
+
+    // Get local captured image if available (for immediate display)
+    final localImage = args?['capturedImage'];
+    if (localImage != null && localImage is File) {
+      capturedImage.value = localImage;
+    }
 
     // Check if attendance data from API is available
     final apiData = args?['attendanceData'];

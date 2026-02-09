@@ -201,7 +201,7 @@ class PhotoValidationController extends GetxController {
           duration: const Duration(seconds: 2),
         );
 
-        // Navigate to success page with attendance data
+        // Navigate to success page with attendance data and local image
         Future.delayed(const Duration(milliseconds: 500), () {
           Get.offNamed(
             AppRoutes.employeeAttendanceSuccess,
@@ -209,6 +209,7 @@ class PhotoValidationController extends GetxController {
               'type': attendanceType.value,
               'isCheckIn': !isClockOut.value,
               'attendanceData': result.data,
+              'capturedImage': capturedImage.value, // Pass local file for immediate display
             },
           );
         });
