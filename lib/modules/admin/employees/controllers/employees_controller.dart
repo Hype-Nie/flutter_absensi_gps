@@ -59,10 +59,7 @@ class EmployeesController extends GetxController {
         title: const Text('Konfirmasi'),
         content: const Text('Apakah Anda yakin ingin menghapus karyawan ini?'),
         actions: [
-          TextButton(
-            onPressed: () => Get.back(),
-            child: const Text('Batal'),
-          ),
+          TextButton(onPressed: () => Get.back(), child: const Text('Batal')),
           TextButton(
             onPressed: () => _performDelete(id),
             child: const Text(
@@ -99,8 +96,8 @@ class EmployeesController extends GetxController {
     }
   }
 
-  void refreshData() {
-    _loadEmployees(refresh: true);
+  Future<void> refreshData() async {
+    await _loadEmployees(refresh: true);
   }
 
   void _showErrorSnackbar(String title, String? detail) {

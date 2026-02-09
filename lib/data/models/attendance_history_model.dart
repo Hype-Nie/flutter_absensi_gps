@@ -56,7 +56,7 @@ class AttendanceHistoryModel {
       status: json['status'] as String,
       createdAt: DateTime.parse(json['created_at'] as String),
       updatedAt: DateTime.parse(json['updated_at'] as String),
-      user: json['user'] != null 
+      user: json['user'] != null
           ? EmployeeModel.fromJson(json['user'] as Map<String, dynamic>)
           : null,
     );
@@ -104,8 +104,19 @@ class AttendanceHistoryModel {
 
   String get formattedDate {
     final months = [
-      '', 'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
-      'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'
+      '',
+      'Januari',
+      'Februari',
+      'Maret',
+      'April',
+      'Mei',
+      'Juni',
+      'Juli',
+      'Agustus',
+      'September',
+      'Oktober',
+      'November',
+      'Desember',
     ];
     return '${tanggal.day} ${months[tanggal.month]} ${tanggal.year}';
   }

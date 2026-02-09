@@ -83,12 +83,17 @@ class EmployeeDetailController extends GetxController {
     if (employeeId == null) return;
 
     // Find updated employee in service cache
-    final updatedEmployee = _employeeService.employees
-        .firstWhereOrNull((emp) => emp.id == employeeId);
+    final updatedEmployee = _employeeService.employees.firstWhereOrNull(
+      (emp) => emp.id == employeeId,
+    );
 
     if (updatedEmployee != null) {
       employee.value = updatedEmployee.toJson();
     }
+  }
+
+  Future<void> refreshData() async {
+    await Future.wait([_refreshEmployeeData(), _loadAttendanceHistory()]);
   }
 
   void deleteEmployee() {

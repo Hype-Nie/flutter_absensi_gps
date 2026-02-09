@@ -37,15 +37,15 @@ void main() async {
   // Initialize services
   await _initServices();
   AppLogger.info('App: Services initialized');
-  
+
   // Set preferred orientations
   await SystemChrome.setPreferredOrientations([
     DeviceOrientation.portraitUp,
     DeviceOrientation.portraitDown,
   ]);
-  
+
   runApp(const MyApp());
-  
+
   // Configure EasyLoading
   _configureEasyLoading();
 }
@@ -55,10 +55,10 @@ Future<void> _initServices() async {
     // Initialize core services
     AppLogger.info('App: Initializing StorageService...');
     Get.put(StorageService());
-    
+
     AppLogger.info('App: Initializing LocationService...');
     Get.put(LocationService());
-    
+
     AppLogger.info('App: Initializing ApiProvider...');
     Get.put(ApiProvider());
 
@@ -105,4 +105,3 @@ class MyApp extends StatelessWidget {
     );
   }
 }
-

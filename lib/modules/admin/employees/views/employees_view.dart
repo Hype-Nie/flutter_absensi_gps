@@ -19,15 +19,20 @@ class EmployeesView extends GetView<EmployeesController> {
               child: Obx(
                 () => controller.isLoading.value
                     ? _buildLoadingState()
-                    : SingleChildScrollView(
-                        padding: const EdgeInsets.all(16),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            _buildSearchBar(),
-                            const SizedBox(height: 16),
-                            _buildEmployeeList(),
-                          ],
+                    : RefreshIndicator(
+                        onRefresh: () => controller.refreshData(),
+                        color: AppColors.primary,
+                        child: SingleChildScrollView(
+                          physics: const AlwaysScrollableScrollPhysics(),
+                          padding: const EdgeInsets.all(16),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              _buildSearchBar(),
+                              const SizedBox(height: 16),
+                              _buildEmployeeList(),
+                            ],
+                          ),
                         ),
                       ),
               ),

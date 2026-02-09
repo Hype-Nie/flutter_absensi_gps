@@ -13,25 +13,35 @@ class AttendanceService {
   /// GET /absensi/{id}
   Future<AttendanceResult> getAttendanceById(String userId) async {
     try {
-      AppLogger.info('AttendanceService: Fetching attendance for user ID: $userId');
+      AppLogger.info(
+        'AttendanceService: Fetching attendance for user ID: $userId',
+      );
 
       final response = await _apiProvider.get('/absensi/$userId');
 
-      AppLogger.info('AttendanceService: Response status: ${response.statusCode}');
+      AppLogger.info(
+        'AttendanceService: Response status: ${response.statusCode}',
+      );
 
       if (response.statusCode == 200) {
         final data = response.data as Map<String, dynamic>;
 
         if (data['success'] == true) {
           final attendanceData = data['data'];
-          
+
           if (attendanceData is List) {
             // Multiple records
             final attendanceList = attendanceData
-                .map((item) => AttendanceHistoryModel.fromJson(item as Map<String, dynamic>))
+                .map(
+                  (item) => AttendanceHistoryModel.fromJson(
+                    item as Map<String, dynamic>,
+                  ),
+                )
                 .toList();
-            
-            AppLogger.info('AttendanceService: Found ${attendanceList.length} attendance records');
+
+            AppLogger.info(
+              'AttendanceService: Found ${attendanceList.length} attendance records',
+            );
             return AttendanceResult.success(attendanceList);
           } else if (attendanceData is Map<String, dynamic>) {
             // Single record
@@ -40,9 +50,11 @@ class AttendanceService {
             return AttendanceResult.success([attendance]);
           }
         }
-        
+
         final message = data['message'] ?? 'Gagal memuat data absensi';
-        AppLogger.error('AttendanceService: API returned success=false: $message');
+        AppLogger.error(
+          'AttendanceService: API returned success=false: $message',
+        );
         return AttendanceResult.failure(message);
       }
 
@@ -87,23 +99,13 @@ class AttendanceResult {
   final String? error;
   final bool isSuccess;
 
-  AttendanceResult._({
-    this.data,
-    this.error,
-    required this.isSuccess,
-  });
+  AttendanceResult._({this.data, this.error, required this.isSuccess});
 
   factory AttendanceResult.success(List<AttendanceHistoryModel> data) {
-    return AttendanceResult._(
-      data: data,
-      isSuccess: true,
-    );
+    return AttendanceResult._(data: data, isSuccess: true);
   }
 
   factory AttendanceResult.failure(String error) {
-    return AttendanceResult._(
-      error: error,
-      isSuccess: false,
-    );
+    return AttendanceResult._(error: error, isSuccess: false);
   }
 }
