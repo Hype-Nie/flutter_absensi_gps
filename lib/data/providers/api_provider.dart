@@ -85,11 +85,7 @@ class ApiProvider {
     Map<String, dynamic>? queryParameters,
   }) async {
     try {
-      return await _dio.put(
-        path,
-        data: data,
-        queryParameters: queryParameters,
-      );
+      return await _dio.put(path, data: data, queryParameters: queryParameters);
     } catch (e) {
       rethrow;
     }

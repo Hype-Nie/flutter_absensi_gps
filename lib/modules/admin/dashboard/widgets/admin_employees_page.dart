@@ -21,9 +21,14 @@ class AdminEmployeesPage extends StatelessWidget {
           child: NotificationListener<ScrollNotification>(
             onNotification: (scrollInfo) =>
                 _handleScroll(controller, scrollInfo),
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: _buildEmployeeList(controller),
+            child: RefreshIndicator(
+              onRefresh: controller.refreshEmployees,
+              color: AppColors.primary,
+              backgroundColor: AppColors.surface,
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: _buildEmployeeList(controller),
+              ),
             ),
           ),
         ),

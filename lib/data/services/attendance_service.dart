@@ -1,5 +1,8 @@
+import 'dart:io';
 import 'package:dio/dio.dart';
+import 'package:intl/intl.dart';
 import '../models/attendance_history_model.dart';
+import '../models/user_stats_model.dart';
 import '../providers/api_provider.dart';
 import '../../core/utils/logger.dart';
 
@@ -9,18 +12,266 @@ class AttendanceService {
 
   AttendanceService(this._apiProvider);
 
-  /// Get attendance history by user ID
-  /// GET /absensi/{id}
-  Future<AttendanceResult> getAttendanceById(String userId) async {
+  /// Clock in attendance with multipart/form-data
+  /// POST /absensi/clock-in
+  Future<ClockInResult> clockIn({
+    required String userId,
+    required DateTime tanggal,
+    required File clockInImage,
+    required double clockInLat,
+    required double clockInLong,
+  }) async {
     try {
+      AppLogger.info('AttendanceService: Clock in for user ID: $userId');
+
+      // Verify image file exists
+      if (!await clockInImage.exists()) {
+        AppLogger.error(
+          'Clock-in image file does not exist: ${clockInImage.path}',
+        );
+        return ClockInResult.failure('File foto tidak ditemukan');
+      }
+
+      // Check file size
+      final fileSize = await clockInImage.length();
+      final fileSizeInMB = fileSize / (1024 * 1024);
+
       AppLogger.info(
-        'AttendanceService: Fetching attendance for user ID: $userId',
+        'AttendanceService: Image size: ${fileSizeInMB.toStringAsFixed(2)} MB',
       );
 
-      final response = await _apiProvider.get('/absensi/$userId');
+      // Validate file size (max 2MB)
+      if (fileSizeInMB > 2.0) {
+        AppLogger.error(
+          'Clock-in image too large: ${fileSizeInMB.toStringAsFixed(2)} MB',
+        );
+        return ClockInResult.failure(
+          'Ukuran foto terlalu besar (${fileSizeInMB.toStringAsFixed(2)} MB). Maksimal 2MB.',
+        );
+      }
+
+      // Format tanggal as YYYY-MM-DD
+      final formattedDate = DateFormat('yyyy-MM-dd').format(tanggal);
+
+      // Create multipart form data
+      final formData = FormData.fromMap({
+        'user_id': userId,
+        'tanggal': formattedDate,
+        'clock_in_image': await MultipartFile.fromFile(
+          clockInImage.path,
+          filename: 'clock_in_${DateTime.now().millisecondsSinceEpoch}.jpg',
+        ),
+        'clock_in_lat': clockInLat.toString(),
+        'clock_in_long': clockInLong.toString(),
+      });
+
+      final imageSize = await clockInImage.length();
+      AppLogger.info('AttendanceService: Sending clock-in request');
+      AppLogger.info('  - user_id: $userId');
+      AppLogger.info('  - tanggal: $formattedDate');
+      AppLogger.info('  - clock_in_lat: $clockInLat');
+      AppLogger.info('  - clock_in_long: $clockInLong');
+      AppLogger.info('  - image: ${clockInImage.path}');
+      AppLogger.info(
+        '  - image size: ${(imageSize / 1024).toStringAsFixed(2)} KB',
+      );
+
+      final response = await _apiProvider.upload(
+        '/absensi/clock-in',
+        formData: formData,
+      );
+
+      AppLogger.info(
+        'AttendanceService: Clock-in response status: ${response.statusCode}',
+      );
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        final data = response.data as Map<String, dynamic>;
+
+        if (data['success'] == true) {
+          final attendanceData = data['data'] as Map<String, dynamic>;
+          final attendance = AttendanceHistoryModel.fromJson(attendanceData);
+
+          AppLogger.info(
+            'AttendanceService: Clock-in successful. Status: ${attendance.status}',
+          );
+
+          return ClockInResult.success(attendance);
+        }
+
+        final message = data['message'] ?? 'Clock in gagal';
+        AppLogger.error('AttendanceService: Clock-in failed: $message');
+        return ClockInResult.failure(message);
+      }
+
+      return ClockInResult.failure('Clock in gagal');
+    } on DioException catch (e) {
+      // Log detailed error information
+      AppLogger.error('AttendanceService: Clock-in DioException', e);
+
+      if (e.response != null) {
+        AppLogger.error('Response status: ${e.response?.statusCode}');
+        AppLogger.error('Response data: ${e.response?.data}');
+      }
+
+      final errorMessage = _handleClockInException(e);
+      return ClockInResult.failure(errorMessage);
+    } catch (e, stackTrace) {
+      AppLogger.error(
+        'AttendanceService: Clock-in unexpected error',
+        e,
+        stackTrace,
+      );
+      return ClockInResult.failure('Terjadi kesalahan: ${e.toString()}');
+    }
+  }
+
+  /// Clock out attendance with multipart/form-data
+  /// POST /absensi/clock-out/{attendanceId}
+  Future<ClockInResult> clockOut({
+    required int attendanceId,
+    required File clockOutImage,
+    required double clockOutLat,
+    required double clockOutLong,
+  }) async {
+    try {
+      AppLogger.info(
+        'AttendanceService: Clock out for attendance ID: $attendanceId',
+      );
+
+      // Verify image file exists
+      if (!await clockOutImage.exists()) {
+        AppLogger.error(
+          'Clock-out image file does not exist: ${clockOutImage.path}',
+        );
+        return ClockInResult.failure('File foto tidak ditemukan');
+      }
+
+      // Check file size
+      final fileSize = await clockOutImage.length();
+      final fileSizeInMB = fileSize / (1024 * 1024);
+
+      AppLogger.info(
+        'AttendanceService: Image size: ${fileSizeInMB.toStringAsFixed(2)} MB',
+      );
+
+      // Validate file size (max 2MB)
+      if (fileSizeInMB > 2.0) {
+        AppLogger.error(
+          'Clock-out image too large: ${fileSizeInMB.toStringAsFixed(2)} MB',
+        );
+        return ClockInResult.failure(
+          'Ukuran foto terlalu besar (${fileSizeInMB.toStringAsFixed(2)} MB). Maksimal 2MB.',
+        );
+      }
+
+      // Create multipart form data
+      final formData = FormData.fromMap({
+        'clock_out_image': await MultipartFile.fromFile(
+          clockOutImage.path,
+          filename: 'clock_out_${DateTime.now().millisecondsSinceEpoch}.jpg',
+        ),
+        'clock_out_lat': clockOutLat.toString(),
+        'clock_out_long': clockOutLong.toString(),
+      });
+
+      final imageSize = await clockOutImage.length();
+      AppLogger.info('AttendanceService: Sending clock-out request');
+      AppLogger.info('  - attendance_id: $attendanceId');
+      AppLogger.info('  - clock_out_lat: $clockOutLat');
+      AppLogger.info('  - clock_out_long: $clockOutLong');
+      AppLogger.info('  - image: ${clockOutImage.path}');
+      AppLogger.info(
+        '  - image size: ${(imageSize / 1024).toStringAsFixed(2)} KB',
+      );
+
+      final response = await _apiProvider.upload(
+        '/absensi/clock-out/$attendanceId',
+        formData: formData,
+      );
+
+      AppLogger.info(
+        'AttendanceService: Clock-out response status: ${response.statusCode}',
+      );
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        final data = response.data as Map<String, dynamic>;
+
+        if (data['success'] == true) {
+          final attendanceData = data['data'] as Map<String, dynamic>;
+          final attendance = AttendanceHistoryModel.fromJson(attendanceData);
+
+          AppLogger.info(
+            'AttendanceService: Clock-out successful. Status: ${attendance.status}',
+          );
+
+          return ClockInResult.success(attendance);
+        }
+
+        final message = data['message'] ?? 'Clock out gagal';
+        AppLogger.error('AttendanceService: Clock-out failed: $message');
+        return ClockInResult.failure(message);
+      }
+
+      return ClockInResult.failure('Clock out gagal');
+    } on DioException catch (e) {
+      AppLogger.error('AttendanceService: Clock-out DioException', e);
+
+      if (e.response != null) {
+        AppLogger.error('Response status: ${e.response?.statusCode}');
+        AppLogger.error('Response data: ${e.response?.data}');
+      }
+
+      final errorMessage = _handleClockInException(e);
+      return ClockInResult.failure(errorMessage);
+    } catch (e, stackTrace) {
+      AppLogger.error(
+        'AttendanceService: Clock-out unexpected error',
+        e,
+        stackTrace,
+      );
+      return ClockInResult.failure('Terjadi kesalahan: ${e.toString()}');
+    }
+  }
+
+  /// Get attendance history by user ID with pagination
+  /// GET /absensi?user_id={userId}&page={page}
+  Future<AttendanceResult> getAttendanceById(
+    String userId, {
+    int? page,
+    int perPage = 10,
+  }) async {
+    try {
+      // Build query parameters using /absensi endpoint with user_id filter
+      final queryParams = <String, dynamic>{
+        'user_id': userId,
+        'order_by': 'tanggal',
+        'order_dir': 'desc',
+      };
+
+      if (page != null) {
+        queryParams['page'] = page.toString();
+        queryParams['per_page'] = perPage.toString();
+      }
+
+      // Build query string
+      final queryString = queryParams.entries
+          .map((e) => '${e.key}=${Uri.encodeComponent(e.value.toString())}')
+          .join('&');
+
+      final endpoint = '/absensi?$queryString';
+
+      AppLogger.info(
+        'AttendanceService: Fetching attendance for user ID: $userId${page != null ? " (page $page)" : ""}',
+      );
+
+      final response = await _apiProvider.get(endpoint);
 
       AppLogger.info(
         'AttendanceService: Response status: ${response.statusCode}',
+      );
+      AppLogger.info(
+        'AttendanceService: Response data type: ${response.data.runtimeType}',
       );
 
       if (response.statusCode == 200) {
@@ -29,8 +280,25 @@ class AttendanceService {
         if (data['success'] == true) {
           final attendanceData = data['data'];
 
-          if (attendanceData is List) {
-            // Multiple records
+          // Handle paginated response (data contains pagination info)
+          if (attendanceData is Map<String, dynamic> &&
+              attendanceData.containsKey('data')) {
+            final items = attendanceData['data'] as List;
+            final attendanceList = items
+                .map(
+                  (item) => AttendanceHistoryModel.fromJson(
+                    item as Map<String, dynamic>,
+                  ),
+                )
+                .toList();
+
+            AppLogger.info(
+              'AttendanceService: Found ${attendanceList.length} attendance records (paginated)',
+            );
+            return AttendanceResult.success(attendanceList);
+          }
+          // Handle direct list response
+          else if (attendanceData is List) {
             final attendanceList = attendanceData
                 .map(
                   (item) => AttendanceHistoryModel.fromJson(
@@ -43,8 +311,9 @@ class AttendanceService {
               'AttendanceService: Found ${attendanceList.length} attendance records',
             );
             return AttendanceResult.success(attendanceList);
-          } else if (attendanceData is Map<String, dynamic>) {
-            // Single record
+          }
+          // Handle single record
+          else if (attendanceData is Map<String, dynamic>) {
             final attendance = AttendanceHistoryModel.fromJson(attendanceData);
             AppLogger.info('AttendanceService: Found 1 attendance record');
             return AttendanceResult.success([attendance]);
@@ -69,6 +338,58 @@ class AttendanceService {
     }
   }
 
+  String _handleClockInException(DioException e) {
+    if (e.response != null) {
+      final data = e.response?.data;
+
+      // Try to parse detailed validation errors
+      if (data is Map) {
+        if (data.containsKey('message')) {
+          final message = data['message'];
+
+          // Check for validation errors
+          if (data.containsKey('errors') && data['errors'] is Map) {
+            final errors = data['errors'] as Map;
+            final errorMessages = <String>[];
+
+            errors.forEach((key, value) {
+              if (value is List && value.isNotEmpty) {
+                errorMessages.add('$key: ${value.first}');
+              } else if (value is String) {
+                errorMessages.add('$key: $value');
+              }
+            });
+
+            if (errorMessages.isNotEmpty) {
+              return '$message\n${errorMessages.join('\n')}';
+            }
+          }
+
+          return message ?? 'Clock in gagal';
+        }
+      }
+
+      if (e.response?.statusCode == 422) {
+        return 'Validasi gagal. Periksa data yang dikirim';
+      }
+      if (e.response?.statusCode == 404) {
+        return 'Endpoint tidak ditemukan';
+      }
+      if (e.response?.statusCode == 401) {
+        return 'Unauthorized - silakan login kembali';
+      }
+    }
+
+    if (e.type == DioExceptionType.connectionTimeout ||
+        e.type == DioExceptionType.receiveTimeout) {
+      return 'Koneksi timeout - periksa koneksi internet Anda';
+    }
+    if (e.type == DioExceptionType.connectionError) {
+      return 'Tidak ada koneksi internet';
+    }
+    return 'Terjadi kesalahan: ${e.message ?? "Unknown error"}';
+  }
+
   String _handleDioException(DioException e) {
     if (e.response != null) {
       final data = e.response?.data;
@@ -91,6 +412,99 @@ class AttendanceService {
     }
     return 'Terjadi kesalahan: ${e.message ?? "Unknown error"}';
   }
+
+  /// Get user attendance statistics
+  /// GET /absensi/user/{id}/stats
+  Future<StatsResult> getUserStats(String userId) async {
+    try {
+      AppLogger.info('AttendanceService: Fetching stats for user ID: $userId');
+
+      final response = await _apiProvider.get('/absensi/user/$userId/stats');
+
+      AppLogger.info(
+        'AttendanceService: Stats response status: ${response.statusCode}',
+      );
+
+      if (response.statusCode == 200) {
+        final data = response.data as Map<String, dynamic>;
+
+        if (data['success'] == true) {
+          final statsData = data['data'] as Map<String, dynamic>;
+          final stats = UserStatsModel.fromJson(statsData);
+
+          AppLogger.info(
+            'AttendanceService: Stats loaded - Hadir: ${stats.stats.totalHadir}, Terlambat: ${stats.stats.totalTerlambat}',
+          );
+          return StatsResult.success(stats);
+        }
+
+        final message = data['message'] ?? 'Gagal memuat statistik';
+        AppLogger.error(
+          'AttendanceService: API returned success=false: $message',
+        );
+        return StatsResult.failure(message);
+      }
+
+      return StatsResult.failure('Gagal memuat statistik');
+    } on DioException catch (e) {
+      final errorMessage = _handleDioException(e);
+      AppLogger.error('AttendanceService: Stats DioException', e, e.stackTrace);
+      return StatsResult.failure(errorMessage);
+    } catch (e, stackTrace) {
+      AppLogger.error(
+        'AttendanceService: Stats unexpected error',
+        e,
+        stackTrace,
+      );
+      return StatsResult.failure('Terjadi kesalahan: ${e.toString()}');
+    }
+  }
+
+  /// Get today's attendance for user
+  /// Returns the attendance record if exists, null if not found
+  Future<AttendanceHistoryModel?> getTodayAttendance(String userId) async {
+    try {
+      AppLogger.info(
+        'AttendanceService: Fetching today attendance for user ID: $userId',
+      );
+
+      final result = await getAttendanceById(userId, page: 1);
+
+      if (result.isSuccess && result.data != null && result.data!.isNotEmpty) {
+        // Check if first record (most recent) is from today
+        final latestAttendance = result.data!.first;
+
+        // Convert UTC date to local date for comparison
+        final now = DateTime.now();
+        final today = DateTime(now.year, now.month, now.day);
+
+        // attendance.tanggal is UTC, convert to local date
+        final localAttendanceDate = latestAttendance.tanggal.toLocal();
+        final attendanceDate = DateTime(
+          localAttendanceDate.year,
+          localAttendanceDate.month,
+          localAttendanceDate.day,
+        );
+
+        if (attendanceDate == today) {
+          AppLogger.info(
+            'AttendanceService: Found today attendance - ID: ${latestAttendance.id}, Clock Out: ${latestAttendance.clockOut ?? "not yet"}',
+          );
+          return latestAttendance;
+        }
+      }
+
+      AppLogger.info('AttendanceService: No attendance found for today');
+      return null;
+    } catch (e, stackTrace) {
+      AppLogger.error(
+        'AttendanceService: Error fetching today attendance',
+        e,
+        stackTrace,
+      );
+      return null;
+    }
+  }
 }
 
 /// Result wrapper for attendance operations
@@ -107,5 +521,39 @@ class AttendanceResult {
 
   factory AttendanceResult.failure(String error) {
     return AttendanceResult._(error: error, isSuccess: false);
+  }
+}
+
+/// Result wrapper for clock-in operations
+class ClockInResult {
+  final AttendanceHistoryModel? data;
+  final String? error;
+  final bool isSuccess;
+
+  ClockInResult._({this.data, this.error, required this.isSuccess});
+
+  factory ClockInResult.success(AttendanceHistoryModel data) {
+    return ClockInResult._(data: data, isSuccess: true);
+  }
+
+  factory ClockInResult.failure(String error) {
+    return ClockInResult._(error: error, isSuccess: false);
+  }
+}
+
+/// Result wrapper for stats operations
+class StatsResult {
+  final UserStatsModel? data;
+  final String? error;
+  final bool isSuccess;
+
+  StatsResult._({this.data, this.error, required this.isSuccess});
+
+  factory StatsResult.success(UserStatsModel data) {
+    return StatsResult._(data: data, isSuccess: true);
+  }
+
+  factory StatsResult.failure(String error) {
+    return StatsResult._(error: error, isSuccess: false);
   }
 }

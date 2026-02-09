@@ -244,24 +244,39 @@ class EmployeeService extends getx.GetxService {
       AppLogger.info(
         'EmployeeService: Create response status: ${response.statusCode}',
       );
+      AppLogger.info('EmployeeService: Response data: ${response.data}');
 
       if (response.statusCode == 200 || response.statusCode == 201) {
         final data = response.data as Map<String, dynamic>;
-        if (data['success'] == true) {
-          final user = data['user'] as Map<String, dynamic>?;
-          if (user != null) {
-            final employee = EmployeeModel.fromJson(user);
-            // Only add to local state if role is karyawan (not admin)
-            if (employee.role == null || employee.role == 'karyawan') {
-              employees.insert(0, employee);
-              total.value = total.value + 1;
-            }
 
-            AppLogger.info(
-              'EmployeeService: Successfully created employee: ${employee.name}',
-            );
-            return EmployeeResult.success(employee);
+        // Handle different response formats
+        Map<String, dynamic>? user;
+
+        // Format 1: { "success": true, "user": {...} }
+        if (data['success'] == true && data['user'] != null) {
+          user = data['user'] as Map<String, dynamic>;
+        }
+        // Format 2: { "data": {...} } or direct user data
+        else if (data['data'] != null) {
+          user = data['data'] as Map<String, dynamic>;
+        }
+        // Format 3: { "message": "...", "id": ..., "npk": ... } - direct user fields
+        else if (data['id'] != null || data['npk'] != null) {
+          user = data;
+        }
+
+        if (user != null) {
+          final employee = EmployeeModel.fromJson(user);
+          // Only add to local state if role is karyawan (not admin)
+          if (employee.role == null || employee.role == 'karyawan') {
+            employees.insert(0, employee);
+            total.value = total.value + 1;
           }
+
+          AppLogger.info(
+            'EmployeeService: Successfully created employee: ${employee.name}',
+          );
+          return EmployeeResult.success(employee);
         }
       }
 

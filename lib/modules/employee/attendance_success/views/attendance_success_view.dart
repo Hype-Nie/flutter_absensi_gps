@@ -65,36 +65,72 @@ class AttendanceSuccessView extends GetView<AttendanceSuccessController> {
                     const SizedBox(height: 16),
                     
                     // Foto Selfie Row
-                    Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 8),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          const Text(
-                            'Foto Selfi',
-                            style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w600,
-                              color: AppColors.grey600,
+                    Obx(() {
+                      final attendanceData = controller.attendanceData.value;
+                      final imageUrl = attendanceData != null
+                          ? (controller.isCheckIn.value
+                              ? attendanceData.clockInImageUrl
+                              : attendanceData.clockOutImageUrl)
+                          : null;
+
+                      return Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 8),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            const Text(
+                              'Foto Selfi',
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w600,
+                                color: AppColors.grey600,
+                              ),
                             ),
-                          ),
-                          Container(
-                            width: 50,
-                            height: 50,
-                            decoration: BoxDecoration(
-                              color: AppColors.grey200,
-                              borderRadius: BorderRadius.circular(8),
-                              border: Border.all(color: AppColors.grey300),
+                            Container(
+                              width: 80,
+                              height: 80,
+                              decoration: BoxDecoration(
+                                color: AppColors.grey200,
+                                borderRadius: BorderRadius.circular(8),
+                                border: Border.all(color: AppColors.grey300),
+                              ),
+                              child: ClipRRect(
+                                borderRadius: BorderRadius.circular(7),
+                                child: imageUrl != null
+                                    ? Image.network(
+                                        imageUrl,
+                                        fit: BoxFit.cover,
+                                        errorBuilder: (context, error, stackTrace) {
+                                          return Icon(
+                                            Icons.broken_image,
+                                            color: AppColors.grey600,
+                                            size: 32,
+                                          );
+                                        },
+                                        loadingBuilder: (context, child, loadingProgress) {
+                                          if (loadingProgress == null) return child;
+                                          return Center(
+                                            child: CircularProgressIndicator(
+                                              value: loadingProgress.expectedTotalBytes != null
+                                                  ? loadingProgress.cumulativeBytesLoaded /
+                                                      loadingProgress.expectedTotalBytes!
+                                                  : null,
+                                              strokeWidth: 2,
+                                            ),
+                                          );
+                                        },
+                                      )
+                                    : Icon(
+                                        Icons.camera_alt_outlined,
+                                        color: AppColors.grey600,
+                                        size: 32,
+                                      ),
+                              ),
                             ),
-                            child: Icon(
-                              Icons.camera_alt_outlined,
-                              color: AppColors.grey600,
-                              size: 28,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
+                          ],
+                        ),
+                      );
+                    }),
                     const SizedBox(height: 40),
 
                     // Back to Dashboard Button

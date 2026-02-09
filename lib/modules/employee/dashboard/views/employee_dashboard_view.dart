@@ -17,20 +17,26 @@ class EmployeeDashboardView extends GetView<EmployeeDashboardController> {
         child: Column(
           children: [
             Expanded(
-              child: SingleChildScrollView(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    _buildHeader(),
-                    _buildStatCards(),
-                    const SizedBox(height: 24),
-                    _buildAttendanceSection(),
-                    const SizedBox(height: 16),
-                    _buildAttendanceList(),
-                    const SizedBox(height: 16),
-                    _buildHistoryButton(),
-                    const SizedBox(height: 24),
-                  ],
+              child: RefreshIndicator(
+                onRefresh: controller.refreshData,
+                color: AppColors.primary,
+                backgroundColor: AppColors.surface,
+                child: SingleChildScrollView(
+                  physics: const AlwaysScrollableScrollPhysics(),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      _buildHeader(),
+                      _buildStatCards(),
+                      const SizedBox(height: 24),
+                      _buildAttendanceSection(),
+                      const SizedBox(height: 16),
+                      _buildAttendanceList(),
+                      const SizedBox(height: 16),
+                      _buildHistoryButton(),
+                      const SizedBox(height: 24),
+                    ],
+                  ),
                 ),
               ),
             ),
@@ -38,15 +44,49 @@ class EmployeeDashboardView extends GetView<EmployeeDashboardController> {
           ],
         ),
       ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () => showAttendanceOptionsSheet(context),
-        backgroundColor: AppColors.primary,
-        icon: const Icon(Icons.fingerprint, color: AppColors.textWhite),
-        label: const Text(
-          'Absensi',
-          style: TextStyle(color: AppColors.textWhite, fontWeight: FontWeight.bold),
-        ),
-      ),
+      floatingActionButton: Obx(() {
+        final isClockOut =
+            controller.todayAttendance.value != null &&
+            controller.todayAttendance.value!.clockOut == null;
+        final canSubmit = controller.canAttendNow.value;
+
+        return FloatingActionButton.extended(
+          onPressed: () {
+            // Check if clock-out needs to wait until 9 AM
+            if (isClockOut && !canSubmit) {
+              Get.snackbar(
+                'Informasi',
+                'Absen keluar dibuka mulai jam 9 pagi',
+                snackPosition: SnackPosition.TOP,
+                backgroundColor: AppColors.warning.withOpacity(0.1),
+                colorText: AppColors.warning,
+                duration: const Duration(seconds: 3),
+              );
+              return;
+            }
+
+            if (isClockOut) {
+              // For clock-out, go directly to GPS validation
+              controller.goToAttendance('hadir');
+            } else {
+              // For clock-in, show options sheet
+              showAttendanceOptionsSheet(context);
+            }
+          },
+          backgroundColor: canSubmit ? AppColors.primary : AppColors.grey400,
+          icon: Icon(
+            isClockOut ? Icons.logout : Icons.fingerprint,
+            color: AppColors.textWhite,
+          ),
+          label: Text(
+            controller.attendanceButtonText.value,
+            style: const TextStyle(
+              color: AppColors.textWhite,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        );
+      }),
     );
   }
 
@@ -72,19 +112,18 @@ class EmployeeDashboardView extends GetView<EmployeeDashboardController> {
             children: [
               Text(
                 'Selamat Datang',
-                style: TextStyle(
-                  fontSize: 16,
-                  color: AppColors.textSecondary,
+                style: TextStyle(fontSize: 16, color: AppColors.textSecondary),
+              ),
+              Obx(
+                () => Text(
+                  controller.userName.value,
+                  style: const TextStyle(
+                    fontSize: 22,
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.textPrimary,
+                  ),
                 ),
               ),
-              Obx(() => Text(
-                controller.userName.value,
-                style: const TextStyle(
-                  fontSize: 22,
-                  fontWeight: FontWeight.bold,
-                  color: AppColors.textPrimary,
-                ),
-              )),
             ],
           ),
           const Spacer(),
@@ -103,27 +142,33 @@ class EmployeeDashboardView extends GetView<EmployeeDashboardController> {
       child: Row(
         children: [
           Expanded(
-            child: Obx(() => EmployeeStatCard(
-              count: controller.attendanceCount.value.toString(),
-              label: 'Hadir',
-              color: AppColors.success,
-            )),
+            child: Obx(
+              () => EmployeeStatCard(
+                count: controller.attendanceCount.value.toString(),
+                label: 'Hadir',
+                color: AppColors.success,
+              ),
+            ),
           ),
           const SizedBox(width: 12),
           Expanded(
-            child: Obx(() => EmployeeStatCard(
-              count: controller.izinCount.value.toString(),
-              label: 'Izin',
-              color: AppColors.warning,
-            )),
+            child: Obx(
+              () => EmployeeStatCard(
+                count: controller.izinCount.value.toString(),
+                label: 'Izin',
+                color: AppColors.warning,
+              ),
+            ),
           ),
           const SizedBox(width: 12),
           Expanded(
-            child: Obx(() => EmployeeStatCard(
-              count: controller.sakitCount.value.toString(),
-              label: 'Sakit',
-              color: AppColors.error,
-            )),
+            child: Obx(
+              () => EmployeeStatCard(
+                count: controller.sakitCount.value.toString(),
+                label: 'Sakit',
+                color: AppColors.error,
+              ),
+            ),
           ),
         ],
       ),
@@ -158,7 +203,10 @@ class EmployeeDashboardView extends GetView<EmployeeDashboardController> {
                 hintStyle: const TextStyle(color: AppColors.grey400),
                 prefixIcon: const Icon(Icons.search, color: AppColors.grey400),
                 border: InputBorder.none,
-                contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 14,
+                ),
               ),
             ),
           ),
@@ -168,16 +216,18 @@ class EmployeeDashboardView extends GetView<EmployeeDashboardController> {
   }
 
   Widget _buildAttendanceList() {
-    return Obx(() => ListView.builder(
-          shrinkWrap: true,
-          physics: const NeverScrollableScrollPhysics(),
-          padding: const EdgeInsets.symmetric(horizontal: 20),
-          itemCount: controller.recentAttendances.length,
-          itemBuilder: (context, index) {
-            final attendance = controller.recentAttendances[index];
-            return EmployeeAttendanceItem(attendance: attendance);
-          },
-        ));
+    return Obx(
+      () => ListView.builder(
+        shrinkWrap: true,
+        physics: const NeverScrollableScrollPhysics(),
+        padding: const EdgeInsets.symmetric(horizontal: 20),
+        itemCount: controller.recentAttendances.length,
+        itemBuilder: (context, index) {
+          final attendance = controller.recentAttendances[index];
+          return EmployeeAttendanceItem(attendance: attendance);
+        },
+      ),
+    );
   }
 
   Widget _buildHistoryButton() {
@@ -197,10 +247,7 @@ class EmployeeDashboardView extends GetView<EmployeeDashboardController> {
           ),
           child: const Text(
             'Riwayat Lengkap',
-            style: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.w600,
-            ),
+            style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
           ),
         ),
       ),
@@ -215,10 +262,7 @@ class EmployeeDashboardView extends GetView<EmployeeDashboardController> {
       alignment: Alignment.center,
       child: const Text(
         '@2026 Perhutani Padangan',
-        style: TextStyle(
-          color: AppColors.textPrimary,
-          fontSize: 12,
-        ),
+        style: TextStyle(color: AppColors.textPrimary, fontSize: 12),
       ),
     );
   }

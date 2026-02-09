@@ -12,7 +12,7 @@ mixin DashboardDataMixin on GetxController {
   final RxString searchQuery = ''.obs;
   final RxList<DashboardAttendanceModel> attendanceList = <DashboardAttendanceModel>[].obs;
 
-  void loadDashboardData();
+  Future<void> loadDashboardData();
   void onSearch(String query) {
     searchQuery.value = query;
   }

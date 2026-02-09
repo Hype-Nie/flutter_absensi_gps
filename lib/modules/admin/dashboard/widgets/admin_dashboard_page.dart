@@ -12,17 +12,23 @@ class AdminDashboardPage extends StatelessWidget {
   Widget build(BuildContext context) {
     final controller = Get.find<AdminDashboardController>();
 
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          _buildStatCards(controller),
-          const SizedBox(height: 24),
-          _buildSearchBar(controller),
-          const SizedBox(height: 16),
-          _buildAttendanceList(controller),
-        ],
+    return RefreshIndicator(
+      onRefresh: controller.loadDashboardData,
+      color: AppColors.primary,
+      backgroundColor: AppColors.surface,
+      child: SingleChildScrollView(
+        physics: const AlwaysScrollableScrollPhysics(),
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _buildStatCards(controller),
+            const SizedBox(height: 24),
+            _buildSearchBar(controller),
+            const SizedBox(height: 16),
+            _buildAttendanceList(controller),
+          ],
+        ),
       ),
     );
   }

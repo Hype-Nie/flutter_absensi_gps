@@ -15,17 +15,23 @@ class ReportsView extends GetView<ReportsController> {
           children: [
             _buildHeader(),
             Expanded(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.all(16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    _buildMonthSelector(context),
-                    const SizedBox(height: 16),
-                    _buildSummaryCards(),
-                    const SizedBox(height: 24),
-                    _buildReportTable(),
-                  ],
+              child: RefreshIndicator(
+                onRefresh: controller.refreshData,
+                color: AppColors.primary,
+                backgroundColor: Colors.white,
+                child: SingleChildScrollView(
+                  physics: const AlwaysScrollableScrollPhysics(),
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      _buildMonthSelector(context),
+                      const SizedBox(height: 16),
+                      _buildSummaryCards(),
+                      const SizedBox(height: 24),
+                      _buildReportTable(),
+                    ],
+                  ),
                 ),
               ),
             ),

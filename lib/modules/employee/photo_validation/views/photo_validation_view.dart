@@ -15,9 +15,7 @@ class PhotoValidationView extends GetView<PhotoValidationController> {
         child: Column(
           children: [
             _buildHeader(),
-            Expanded(
-              child: _buildPhotoArea(),
-            ),
+            Expanded(child: _buildPhotoArea()),
             _buildFooter(),
           ],
         ),
@@ -36,12 +34,28 @@ class PhotoValidationView extends GetView<PhotoValidationController> {
             color: AppColors.textPrimary,
           ),
           const SizedBox(width: 8),
-          const Text(
-            'Validasi Foto',
-            style: TextStyle(
-              fontSize: 24,
-              fontWeight: FontWeight.bold,
-              color: AppColors.textPrimary,
+          Expanded(
+            child: Obx(
+              () => Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    controller.isClockOut.value
+                        ? 'Absensi Keluar'
+                        : 'Validasi Foto',
+                    style: const TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                      color: AppColors.textPrimary,
+                    ),
+                  ),
+                  if (controller.isClockOut.value)
+                    Text(
+                      'Clock Out',
+                      style: TextStyle(fontSize: 14, color: AppColors.grey600),
+                    ),
+                ],
+              ),
             ),
           ),
         ],
@@ -54,10 +68,7 @@ class PhotoValidationView extends GetView<PhotoValidationController> {
       padding: const EdgeInsets.symmetric(horizontal: 24),
       child: Column(
         children: [
-          Expanded(
-            flex: 2,
-            child: _buildPhotoContainer(),
-          ),
+          Expanded(flex: 2, child: _buildPhotoContainer()),
           const SizedBox(height: 24),
           _buildCaptureButton(),
           const SizedBox(height: 16),
@@ -96,18 +107,11 @@ class PhotoValidationView extends GetView<PhotoValidationController> {
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Icon(
-                      Icons.person,
-                      size: 120,
-                      color: AppColors.grey400,
-                    ),
+                    Icon(Icons.person, size: 120, color: AppColors.grey400),
                     const SizedBox(height: 16),
                     Text(
                       'Ambil foto selfie',
-                      style: TextStyle(
-                        color: AppColors.grey500,
-                        fontSize: 16,
-                      ),
+                      style: TextStyle(color: AppColors.grey500, fontSize: 16),
                     ),
                   ],
                 ),
@@ -150,16 +154,18 @@ class PhotoValidationView extends GetView<PhotoValidationController> {
             child: PhotoCornerBracket(isTop: false, isLeft: false),
           ),
           // Loading overlay
-          Obx(() => controller.isLoading.value
-              ? Container(
-                  color: AppColors.textPrimary.withValues(alpha: 0.5),
-                  child: const Center(
-                    child: CircularProgressIndicator(
-                      color: AppColors.textWhite,
+          Obx(
+            () => controller.isLoading.value
+                ? Container(
+                    color: AppColors.textPrimary.withValues(alpha: 0.5),
+                    child: const Center(
+                      child: CircularProgressIndicator(
+                        color: AppColors.textWhite,
+                      ),
                     ),
-                  ),
-                )
-              : const SizedBox.shrink()),
+                  )
+                : const SizedBox.shrink(),
+          ),
         ],
       ),
     );
@@ -180,10 +186,7 @@ class PhotoValidationView extends GetView<PhotoValidationController> {
         ),
         child: const Text(
           'Ambil Foto',
-          style: TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.w600,
-          ),
+          style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
         ),
       ),
     );
@@ -191,6 +194,34 @@ class PhotoValidationView extends GetView<PhotoValidationController> {
 
   Widget _buildErrorMessage() {
     return Obx(() {
+      // Show warning if cannot clock out yet
+      if (controller.isClockOut.value && !controller.canSubmit.value) {
+        return Container(
+          padding: const EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            color: AppColors.warning.withValues(alpha: 0.1),
+            borderRadius: BorderRadius.circular(8),
+            border: Border.all(color: AppColors.warning),
+          ),
+          child: Row(
+            children: [
+              const Icon(Icons.access_time, color: AppColors.warning),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Text(
+                  controller.timeUntilCanSubmit.value,
+                  style: const TextStyle(
+                    color: AppColors.warning,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        );
+      }
+
+      // Show photo validation error
       if (!controller.isPhotoValid.value) {
         return Container(
           padding: const EdgeInsets.all(12),
@@ -238,45 +269,49 @@ class PhotoValidationView extends GetView<PhotoValidationController> {
             ),
             child: const Text(
               'Validasi Lokasi',
-              style: TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w600,
-              ),
+              style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
             ),
           ),
         ),
         const SizedBox(width: 12),
         Expanded(
-          child: Obx(() => ElevatedButton(
-            onPressed: controller.capturedImage.value != null
-                ? controller.validateLocation
-                : null,
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.primary,
-              foregroundColor: AppColors.textWhite,
-              padding: const EdgeInsets.symmetric(vertical: 14),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
+          child: Obx(
+            () => ElevatedButton(
+              onPressed:
+                  controller.capturedImage.value != null &&
+                      !controller.isLoading.value &&
+                      controller.canSubmit.value
+                  ? controller.submitAttendance
+                  : null,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.primary,
+                foregroundColor: AppColors.textWhite,
+                padding: const EdgeInsets.symmetric(vertical: 14),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                disabledBackgroundColor: AppColors.grey400,
               ),
-              disabledBackgroundColor: AppColors.grey400,
+              child: controller.isLoading.value
+                  ? const SizedBox(
+                      height: 20,
+                      width: 20,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: AppColors.textWhite,
+                      ),
+                    )
+                  : Text(
+                      controller.isClockOut.value
+                          ? 'Clock Out'
+                          : 'Kirim Absensi',
+                      style: const TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
             ),
-            child: controller.isLoading.value
-                ? const SizedBox(
-                    height: 20,
-                    width: 20,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2,
-                      color: AppColors.textWhite,
-                    ),
-                  )
-                : const Text(
-                    'Kirim Absensi',
-                    style: TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-          )),
+          ),
         ),
       ],
     );
@@ -290,10 +325,7 @@ class PhotoValidationView extends GetView<PhotoValidationController> {
       alignment: Alignment.center,
       child: const Text(
         '@2026 Perhutani Padangan',
-        style: TextStyle(
-          color: AppColors.textPrimary,
-          fontSize: 12,
-        ),
+        style: TextStyle(color: AppColors.textPrimary, fontSize: 12),
       ),
     );
   }

@@ -1,4 +1,5 @@
 import 'employee_model.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 /// Attendance history model for employee detail page
 /// Maps to API response from /absensi/{id}
@@ -41,8 +42,14 @@ class AttendanceHistoryModel {
 
   factory AttendanceHistoryModel.fromJson(Map<String, dynamic> json) {
     return AttendanceHistoryModel(
-      id: json['id'] as int,
-      userId: json['user_id'] as int,
+      id: json['id'] is int
+          ? json['id']
+          : (json['id'] != null ? int.parse(json['id'].toString()) : 0),
+      userId: json['user_id'] is int
+          ? json['user_id']
+          : (json['user_id'] != null
+                ? int.parse(json['user_id'].toString())
+                : 0),
       tanggal: DateTime.parse(json['tanggal'] as String),
       clockIn: json['clock_in'] as String,
       clockInImage: json['clock_in_image'] as String?,
@@ -52,7 +59,11 @@ class AttendanceHistoryModel {
       clockOutImage: json['clock_out_image'] as String?,
       clockOutLat: json['clock_out_lat'] as String?,
       clockOutLong: json['clock_out_long'] as String?,
-      lateDuration: json['late_duration'] as int?,
+      lateDuration: json['late_duration'] != null
+          ? (json['late_duration'] is int
+                ? json['late_duration']
+                : int.parse(json['late_duration'].toString()))
+          : null,
       status: json['status'] as String,
       createdAt: DateTime.parse(json['created_at'] as String),
       updatedAt: DateTime.parse(json['updated_at'] as String),
@@ -119,5 +130,21 @@ class AttendanceHistoryModel {
       'Desember',
     ];
     return '${tanggal.day} ${months[tanggal.month]} ${tanggal.year}';
+  }
+
+  /// Get full URL for clock-in image
+  String? get clockInImageUrl {
+    final baseUrl = dotenv.env['BASE_URL'];
+    final image = clockInImage;
+    if (baseUrl == null || image == null || image.isEmpty) return null;
+    return '$baseUrl/clock-in/$image';
+  }
+
+  /// Get full URL for clock-out image
+  String? get clockOutImageUrl {
+    final baseUrl = dotenv.env['BASE_URL'];
+    final image = clockOutImage;
+    if (baseUrl == null || image == null || image.isEmpty) return null;
+    return '$baseUrl/clock_out/$image';
   }
 }

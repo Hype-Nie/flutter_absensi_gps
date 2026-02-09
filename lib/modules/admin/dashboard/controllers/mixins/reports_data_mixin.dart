@@ -10,7 +10,7 @@ mixin ReportsDataMixin on GetxController {
   final Rx<DateTime> selectedMonth = DateTime.now().obs;
   final RxList<ReportModel> reports = <ReportModel>[].obs;
 
-  void loadReports();
+  Future<void> loadReports();
 
   String get monthYearText {
     return DateFormat('MMMM yyyy', 'id_ID').format(selectedMonth.value);

@@ -51,7 +51,7 @@ class AdminDashboardController extends GetxController
   }
 
   @override
-  void loadDashboardData() {
+  Future<void> loadDashboardData() async {
     // Mock data - replace with API
     totalHadir.value = 45;
     totalIzin.value = 3;
@@ -80,7 +80,7 @@ class AdminDashboardController extends GetxController
   }
 
   @override
-  void loadReports() {
+  Future<void> loadReports() async {
     // Mock data - replace with API
     reports.value = [
       ReportModel.createMock(

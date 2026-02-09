@@ -1,22 +1,24 @@
 import 'package:flutter/material.dart';
 import '../../../../../core/constants/app_colors.dart';
+import '../../../../../data/models/attendance_history_model.dart';
 
 class EmployeeAttendanceItem extends StatelessWidget {
-  final Map<String, dynamic> attendance;
+  final AttendanceHistoryModel attendance;
 
-  const EmployeeAttendanceItem({
-    super.key,
-    required this.attendance,
-  });
+  const EmployeeAttendanceItem({super.key, required this.attendance});
 
   Color _getStatusColor() {
-    switch (attendance['status']) {
-      case 'Hadir':
+    switch (attendance.status.toLowerCase()) {
+      case 'hadir':
         return AppColors.success;
-      case 'Sakit':
-        return AppColors.error;
-      case 'Izin':
+      case 'terlambat':
         return AppColors.warning;
+      case 'sakit':
+        return AppColors.error;
+      case 'izin':
+        return AppColors.warning;
+      case 'alpha':
+        return AppColors.grey600;
       default:
         return AppColors.grey600;
     }
@@ -59,7 +61,7 @@ class EmployeeAttendanceItem extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  attendance['date'],
+                  attendance.formattedDate,
                   style: const TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.w600,
@@ -68,12 +70,18 @@ class EmployeeAttendanceItem extends StatelessWidget {
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  'Jam Masuk:  ${attendance['jamMasuk']}',
-                  style: const TextStyle(fontSize: 12, color: AppColors.grey600),
+                  'Jam Masuk:  ${attendance.clockIn}',
+                  style: const TextStyle(
+                    fontSize: 12,
+                    color: AppColors.grey600,
+                  ),
                 ),
                 Text(
-                  'Jam Keluar:  ${attendance['jamKeluar']}',
-                  style: const TextStyle(fontSize: 12, color: AppColors.grey600),
+                  'Jam Keluar:  ${attendance.clockOut ?? '-'}',
+                  style: const TextStyle(
+                    fontSize: 12,
+                    color: AppColors.grey600,
+                  ),
                 ),
               ],
             ),
@@ -86,7 +94,7 @@ class EmployeeAttendanceItem extends StatelessWidget {
               border: Border.all(color: statusColor.withValues(alpha: 0.5)),
             ),
             child: Text(
-              attendance['status'],
+              attendance.statusDisplay,
               style: TextStyle(
                 fontSize: 12,
                 fontWeight: FontWeight.w600,

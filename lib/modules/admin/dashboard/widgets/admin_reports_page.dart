@@ -13,17 +13,23 @@ class AdminReportsPage extends StatelessWidget {
     return Column(
       children: [
         Expanded(
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                _buildMonthSelector(controller),
-                const SizedBox(height: 16),
-                _buildSummaryCards(controller),
-                const SizedBox(height: 24),
-                _buildReportTable(controller),
-              ],
+          child: RefreshIndicator(
+            onRefresh: controller.loadReports,
+            color: AppColors.primary,
+            backgroundColor: AppColors.surface,
+            child: SingleChildScrollView(
+              physics: const AlwaysScrollableScrollPhysics(),
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _buildMonthSelector(controller),
+                  const SizedBox(height: 16),
+                  _buildSummaryCards(controller),
+                  const SizedBox(height: 24),
+                  _buildReportTable(controller),
+                ],
+              ),
             ),
           ),
         ),

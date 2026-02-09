@@ -51,6 +51,12 @@ class ReportsController extends GetxController {
     ];
   }
 
+  /// Public method for pull-to-refresh
+  Future<void> refreshData() async {
+    await Future.delayed(const Duration(milliseconds: 500));
+    _loadReports();
+  }
+
   String get monthYearText {
     return DateFormat('MMMM yyyy', 'id_ID').format(selectedMonth.value);
   }
