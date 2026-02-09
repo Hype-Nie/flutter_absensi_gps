@@ -25,7 +25,7 @@ class GpsValidationController extends GetxController {
   // 10 predefined location points - User akan sesuaikan koordinatnya nanti
   final List<LocationPoint> validationPoints = const [
     LocationPoint(name: 'Lokasi 1', position: LatLng(-8.151595, 113.734986)),
-    LocationPoint(name: 'Lokasi 2', position: LatLng(-7.2580, 112.7525)),
+    LocationPoint(name: 'Lokasi 2', position: LatLng(-8.146722, 113.686282)),
     LocationPoint(name: 'Lokasi 3', position: LatLng(-7.2585, 112.7530)),
     LocationPoint(name: 'Lokasi 4', position: LatLng(-7.2590, 112.7535)),
     LocationPoint(name: 'Lokasi 5', position: LatLng(-7.2595, 112.7540)),

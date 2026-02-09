@@ -8,6 +8,9 @@ import '../controllers/gps_validation_controller.dart';
 class GpsValidationView extends GetView<GpsValidationController> {
   const GpsValidationView({super.key});
 
+  // Map controller for programmatic camera control
+  static final _mapController = MapController();
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -79,15 +82,25 @@ class GpsValidationView extends GetView<GpsValidationController> {
           ClipRRect(
             borderRadius: BorderRadius.circular(16),
             child: Obx(() {
-              // Default center to first location point
-              final center = controller.currentPosition.value != null
-                  ? LatLng(
-                      controller.currentPosition.value!.latitude,
-                      controller.currentPosition.value!.longitude,
-                    )
+              final currentPos = controller.currentPosition.value;
+
+              // Move map to user location when available
+              if (currentPos != null) {
+                WidgetsBinding.instance.addPostFrameCallback((_) {
+                  _mapController.move(
+                    LatLng(currentPos.latitude, currentPos.longitude),
+                    15.0,
+                  );
+                });
+              }
+
+              // Default center to first location point or user's location
+              final center = currentPos != null
+                  ? LatLng(currentPos.latitude, currentPos.longitude)
                   : controller.validationPoints.first.position;
 
               return FlutterMap(
+                mapController: _mapController,
                 options: MapOptions(
                   initialCenter: center,
                   initialZoom: 15.0,
@@ -240,7 +253,17 @@ class GpsValidationView extends GetView<GpsValidationController> {
               ),
               child: IconButton(
                 icon: const Icon(Icons.my_location),
-                onPressed: controller.refreshLocation,
+                onPressed: () {
+                  controller.refreshLocation();
+                  // Also center map on current location after refresh
+                  final currentPos = controller.currentPosition.value;
+                  if (currentPos != null) {
+                    _mapController.move(
+                      LatLng(currentPos.latitude, currentPos.longitude),
+                      15.0,
+                    );
+                  }
+                },
                 tooltip: 'Refresh Lokasi',
               ),
             ),
