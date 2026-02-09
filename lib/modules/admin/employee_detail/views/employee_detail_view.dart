@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../../../core/constants/app_colors.dart';
+import '../../../../data/models/attendance_history_model.dart';
 import '../controllers/employee_detail_controller.dart';
 
 class EmployeeDetailView extends GetView<EmployeeDetailController> {
@@ -254,6 +255,15 @@ class EmployeeDetailView extends GetView<EmployeeDetailController> {
 
   Widget _buildAttendanceHistory() {
     return Obx(() {
+      if (controller.isLoadingAttendance.value) {
+        return const Center(
+          child: Padding(
+            padding: EdgeInsets.all(32),
+            child: CircularProgressIndicator(color: AppColors.primary),
+          ),
+        );
+      }
+
       final history = controller.filteredHistory;
 
       if (history.isEmpty) {
@@ -280,17 +290,23 @@ class EmployeeDetailView extends GetView<EmployeeDetailController> {
     });
   }
 
-  Widget _buildAttendanceItem(Map<String, dynamic> attendance) {
+  Widget _buildAttendanceItem(AttendanceHistoryModel attendance) {
     Color statusColor;
-    switch (attendance['status']) {
-      case 'Hadir':
+    switch (attendance.status.toLowerCase()) {
+      case 'hadir':
         statusColor = AppColors.success;
         break;
-      case 'Sakit':
+      case 'terlambat':
+        statusColor = Colors.orange;
+        break;
+      case 'sakit':
         statusColor = Colors.red;
         break;
-      case 'Izin':
-        statusColor = Colors.orange;
+      case 'izin':
+        statusColor = Colors.blue;
+        break;
+      case 'alpha':
+        statusColor = Colors.grey;
         break;
       default:
         statusColor = Colors.grey;
@@ -320,9 +336,9 @@ class EmployeeDetailView extends GetView<EmployeeDetailController> {
               borderRadius: BorderRadius.circular(10),
             ),
             child: Icon(
-              attendance['status'] == 'Hadir'
+              attendance.status.toLowerCase() == 'hadir' || attendance.status.toLowerCase() == 'terlambat'
                   ? Icons.check_circle_outline
-                  : attendance['status'] == 'Sakit'
+                  : attendance.status.toLowerCase() == 'sakit'
                       ? Icons.medical_services_outlined
                       : Icons.event_note_outlined,
               color: statusColor,
@@ -335,7 +351,7 @@ class EmployeeDetailView extends GetView<EmployeeDetailController> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  attendance['date'] ?? '-',
+                  attendance.formattedDate,
                   style: const TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.w600,
@@ -343,7 +359,7 @@ class EmployeeDetailView extends GetView<EmployeeDetailController> {
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  'Masuk: ${attendance['jamMasuk']} | Keluar: ${attendance['jamKeluar']}',
+                  'Masuk: ${attendance.clockIn} | Keluar: ${attendance.clockOut ?? '-'}',
                   style: TextStyle(
                     fontSize: 12,
                     color: Colors.grey[500],
@@ -359,7 +375,7 @@ class EmployeeDetailView extends GetView<EmployeeDetailController> {
               borderRadius: BorderRadius.circular(20),
             ),
             child: Text(
-              attendance['status'] ?? '-',
+              attendance.statusDisplay,
               style: TextStyle(
                 fontSize: 12,
                 fontWeight: FontWeight.w600,

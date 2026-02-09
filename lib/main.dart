@@ -12,6 +12,8 @@ import 'core/utils/logger.dart';
 import 'data/services/storage_service.dart';
 import 'data/services/location_service.dart';
 import 'data/services/auth_service.dart';
+import 'data/services/employee_service.dart';
+import 'data/services/attendance_service.dart';
 import 'data/providers/api_provider.dart';
 import 'routes/app_pages.dart';
 
@@ -62,6 +64,12 @@ Future<void> _initServices() async {
 
     AppLogger.info('App: Initializing AuthService...');
     Get.put(AuthService());
+
+    AppLogger.info('App: Initializing EmployeeService...');
+    Get.put(EmployeeService());
+
+    AppLogger.info('App: Initializing AttendanceService...');
+    Get.put(AttendanceService(Get.find<ApiProvider>()));
 
     AppLogger.info('App: All services initialized successfully');
   } catch (e, stackTrace) {

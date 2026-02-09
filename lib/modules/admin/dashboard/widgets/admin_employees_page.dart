@@ -18,13 +18,35 @@ class AdminEmployeesPage extends StatelessWidget {
           child: _buildSearchBar(controller),
         ),
         Expanded(
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: _buildEmployeeList(controller),
+          child: NotificationListener<ScrollNotification>(
+            onNotification: (scrollInfo) =>
+                _handleScroll(controller, scrollInfo),
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: _buildEmployeeList(controller),
+            ),
           ),
         ),
       ],
     );
+  }
+
+  /// Handle scroll events for lazy loading pagination
+  bool _handleScroll(
+    AdminDashboardController controller,
+    ScrollNotification scrollInfo,
+  ) {
+    // Only load more when scrolling near bottom
+    if (scrollInfo is ScrollEndNotification &&
+        scrollInfo.metrics.pixels >=
+            scrollInfo.metrics.maxScrollExtent * 0.8) {
+      // Load more if not already loading and not reached max
+      if (!controller.isLoadingMoreEmployees.value &&
+          !controller.hasReachedMaxEmployees.value) {
+        controller.loadMoreEmployees();
+      }
+    }
+    return false;
   }
 
   Widget _buildSearchBar(AdminDashboardController controller) {
@@ -58,8 +80,17 @@ class AdminEmployeesPage extends StatelessWidget {
 
   Widget _buildEmployeeList(AdminDashboardController controller) {
     return Obx(() {
+      // Show loading indicator on initial load
+      if (controller.isLoadingEmployees.value &&
+          controller.employees.isEmpty) {
+        return const Center(
+          child: CircularProgressIndicator(color: AppColors.primary),
+        );
+      }
+
       final employees = controller.filteredEmployees;
 
+      // Show empty state
       if (employees.isEmpty) {
         return Center(
           child: Padding(
@@ -78,10 +109,35 @@ class AdminEmployeesPage extends StatelessWidget {
         );
       }
 
+      // Build employee list with loading more indicator at bottom
       return Column(
-        children: employees
-            .map((emp) => DashboardEmployeeItem(employee: emp))
-            .toList(),
+        children: [
+          ...employees
+              .map((emp) => DashboardEmployeeItem(employee: emp))
+              .toList(),
+          // Show loading more indicator at bottom
+          if (controller.isLoadingMoreEmployees.value)
+            const Padding(
+              padding: EdgeInsets.all(16),
+              child: Center(
+                child: CircularProgressIndicator(color: AppColors.primary),
+              ),
+            ),
+          // Show end of list indicator when reached max
+          if (controller.hasReachedMaxEmployees.value &&
+              controller.employees.length >= 10)
+            Padding(
+              padding: const EdgeInsets.all(16),
+              child: Center(
+                child: Text(
+                  'Tidak ada data lagi',
+                  style: TextStyle(color: AppColors.grey400, fontSize: 12),
+                ),
+              ),
+            ),
+          // Add extra padding at bottom for FAB + bottom nav space
+          const SizedBox(height: 130),
+        ],
       );
     });
   }

@@ -80,41 +80,6 @@ class AdminDashboardController extends GetxController
   }
 
   @override
-  void loadEmployees() {
-    // Mock data - replace with API
-    employees.value = [
-      EmployeeModel.createMock(
-        id: '1',
-        name: 'Karyawan1',
-        npk: 'NPK001',
-        position: 'Staff',
-        department: 'IT',
-      ),
-      EmployeeModel.createMock(
-        id: '2',
-        name: 'Karyawan2',
-        npk: 'NPK002',
-        position: 'Manager',
-        department: 'HR',
-      ),
-      EmployeeModel.createMock(
-        id: '3',
-        name: 'Karyawan3',
-        npk: 'NPK003',
-        position: 'Staff',
-        department: 'Finance',
-      ),
-      EmployeeModel.createMock(
-        id: '4',
-        name: 'Karyawan4',
-        npk: 'NPK004',
-        position: 'Staff',
-        department: 'Marketing',
-      ),
-    ];
-  }
-
-  @override
   void loadReports() {
     // Mock data - replace with API
     reports.value = [

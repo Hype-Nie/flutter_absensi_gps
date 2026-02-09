@@ -55,16 +55,20 @@ class EmployeeFormView extends GetView<EmployeeFormController> {
             ),
           ),
           const SizedBox(width: 16),
-          Obx(() => Expanded(
-                child: Text(
-                  controller.isEditMode.value ? 'Edit Karyawan' : 'Tambah Karyawan',
-                  style: const TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                    color: AppColors.textWhite,
-                  ),
+          Obx(
+            () => Expanded(
+              child: Text(
+                controller.isEditMode.value
+                    ? 'Edit Karyawan'
+                    : 'Tambah Karyawan',
+                style: const TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                  color: AppColors.textWhite,
                 ),
-              )),
+              ),
+            ),
+          ),
         ],
       ),
     );
@@ -104,57 +108,70 @@ class EmployeeFormView extends GetView<EmployeeFormController> {
               icon: Icons.badge_outlined,
               validator: controller.validateNPK,
             ),
-            const SizedBox(height: 20),
-            Obx(() => _buildPasswordField(
-                  controller: controller.passwordController,
-                  label: controller.isEditMode.value
-                      ? 'Password Baru (Opsional)'
-                      : 'Password',
-                  hint: 'Masukkan password',
-                  showPassword: controller.showPassword.value,
-                  onToggle: controller.togglePasswordVisibility,
-                  validator: controller.validatePassword,
-                )),
-            const SizedBox(height: 20),
-            Obx(() => _buildPasswordField(
-                  controller: controller.confirmPasswordController,
-                  label: 'Konfirmasi Password',
-                  hint: 'Masukkan konfirmasi password',
-                  showPassword: controller.showConfirmPassword.value,
-                  onToggle: controller.toggleConfirmPasswordVisibility,
-                  validator: controller.validateConfirmPassword,
-                )),
-            const SizedBox(height: 32),
-            Obx(() => ElevatedButton(
-                  onPressed: controller.isLoading.value
-                      ? null
-                      : controller.saveEmployee,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.primary,
-                    foregroundColor: AppColors.textWhite,
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    disabledBackgroundColor: AppColors.primary.withValues(alpha: 0.6),
-                  ),
-                  child: controller.isLoading.value
-                      ? const SizedBox(
-                          width: 24,
-                          height: 24,
-                          child: CircularProgressIndicator(
-                            color: AppColors.textWhite,
-                            strokeWidth: 2,
-                          ),
-                        )
-                      : Text(
-                          controller.isEditMode.value ? 'Simpan Perubahan' : 'Tambah Karyawan',
-                          style: const TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w600,
-                          ),
+            // Only show password fields in create mode
+            Obx(
+              () => controller.isEditMode.value
+                  ? const SizedBox(height: 32)
+                  : Column(
+                      children: [
+                        const SizedBox(height: 20),
+                        _buildPasswordField(
+                          controller: controller.passwordController,
+                          label: 'Password',
+                          hint: 'Masukkan password',
+                          showPassword: controller.showPassword.value,
+                          onToggle: controller.togglePasswordVisibility,
+                          validator: controller.validatePassword,
                         ),
-                )),
+                        const SizedBox(height: 20),
+                        _buildPasswordField(
+                          controller: controller.confirmPasswordController,
+                          label: 'Konfirmasi Password',
+                          hint: 'Masukkan konfirmasi password',
+                          showPassword: controller.showConfirmPassword.value,
+                          onToggle: controller.toggleConfirmPasswordVisibility,
+                          validator: controller.validateConfirmPassword,
+                        ),
+                        const SizedBox(height: 32),
+                      ],
+                    ),
+            ),
+            Obx(
+              () => ElevatedButton(
+                onPressed: controller.isLoading.value
+                    ? null
+                    : controller.saveEmployee,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.primary,
+                  foregroundColor: AppColors.textWhite,
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  disabledBackgroundColor: AppColors.primary.withValues(
+                    alpha: 0.6,
+                  ),
+                ),
+                child: controller.isLoading.value
+                    ? const SizedBox(
+                        width: 24,
+                        height: 24,
+                        child: CircularProgressIndicator(
+                          color: AppColors.textWhite,
+                          strokeWidth: 2,
+                        ),
+                      )
+                    : Text(
+                        controller.isEditMode.value
+                            ? 'Simpan Perubahan'
+                            : 'Tambah Karyawan',
+                        style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+              ),
+            ),
           ],
         ),
       ),
