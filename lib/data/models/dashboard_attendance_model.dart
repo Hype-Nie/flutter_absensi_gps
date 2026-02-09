@@ -1,36 +1,48 @@
 /// Attendance item model for dashboard display
 class DashboardAttendanceModel {
   final String name;
+  final String npk;
   final String date;
   final String jamMasuk;
   final String jamKeluar;
   final String status;
+  final String? clockInImageUrl;
+  final String? clockOutImageUrl;
 
   DashboardAttendanceModel({
     required this.name,
+    this.npk = '',
     required this.date,
     required this.jamMasuk,
-    required this.jamKeluar,
+    this.jamKeluar = '-',
     required this.status,
+    this.clockInImageUrl,
+    this.clockOutImageUrl,
   });
 
   factory DashboardAttendanceModel.fromJson(Map<String, dynamic> json) {
     return DashboardAttendanceModel(
       name: json['name'] ?? '',
+      npk: json['npk'] ?? '',
       date: json['date'] ?? '',
       jamMasuk: json['jamMasuk'] ?? '-',
       jamKeluar: json['jamKeluar'] ?? '-',
       status: json['status'] ?? 'Hadir',
+      clockInImageUrl: json['clockInImageUrl'],
+      clockOutImageUrl: json['clockOutImageUrl'],
     );
   }
 
   Map<String, dynamic> toJson() {
     return {
       'name': name,
+      'npk': npk,
       'date': date,
       'jamMasuk': jamMasuk,
       'jamKeluar': jamKeluar,
       'status': status,
+      'clockInImageUrl': clockInImageUrl,
+      'clockOutImageUrl': clockOutImageUrl,
     };
   }
 

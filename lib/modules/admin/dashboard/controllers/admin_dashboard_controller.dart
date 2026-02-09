@@ -2,7 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import '../../../../core/utils/helpers.dart';
+import '../../../../core/utils/logger.dart';
 import '../../../../data/services/auth_service.dart';
+import '../../../../data/services/attendance_service.dart';
+import '../../../../data/models/attendance_history_model.dart';
 import '../../../../routes/app_routes.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../data/models/dashboard_attendance_model.dart';
@@ -15,6 +18,10 @@ import 'mixins/reports_data_mixin.dart';
 class AdminDashboardController extends GetxController
     with DashboardDataMixin, EmployeesDataMixin, ReportsDataMixin {
   final AuthService _authService = Get.find<AuthService>();
+  final AttendanceService _attendanceService = Get.find<AttendanceService>();
+
+  // Loading state
+  final isLoadingDashboard = false.obs;
 
   // Navigation
   final RxInt currentPageIndex = 0.obs;
@@ -52,31 +59,84 @@ class AdminDashboardController extends GetxController
 
   @override
   Future<void> loadDashboardData() async {
-    // Mock data - replace with API
-    totalHadir.value = 45;
-    totalIzin.value = 3;
-    totalSakit.value = 2;
+    isLoadingDashboard.value = true;
 
-    attendanceList.value = [
-      DashboardAttendanceModel.createMock(
-        name: 'Karyawan1',
-        date: '21/01/2026',
-        jamMasuk: '08:00',
-        status: 'Hadir',
-      ),
-      DashboardAttendanceModel.createMock(
-        name: 'Karyawan2',
-        date: '21/01/2026',
-        jamMasuk: '08:00',
-        status: 'Sakit',
-      ),
-      DashboardAttendanceModel.createMock(
-        name: 'Karyawan3',
-        date: '21/01/2026',
-        jamMasuk: '08:00',
-        status: 'Sakit',
-      ),
-    ];
+    try {
+      // Get today's date in YYYY-MM-DD format
+      final today = DateTime.now();
+      final tanggal = DateFormat('yyyy-MM-dd').format(today);
+
+      // Fetch today's attendance from API
+      final result = await _attendanceService.getAttendanceByDate(
+        tanggal: tanggal,
+        perPage: 100,
+      );
+
+      if (result.isSuccess && result.data != null) {
+        final attendances = result.data!;
+
+        // Calculate totals
+        totalHadir.value = attendances.where((a) => a.status.toLowerCase() == 'hadir').length;
+        totalIzin.value = attendances.where((a) => a.status.toLowerCase() == 'izin').length;
+        totalSakit.value = attendances.where((a) => a.status.toLowerCase() == 'sakit').length;
+        totalTerlambat.value = attendances.where((a) => a.status.toLowerCase() == 'terlambat').length;
+
+        // Build attendance list for display
+        attendanceList.value = attendances.map((a) {
+          return DashboardAttendanceModel(
+            name: a.user?.name ?? 'Unknown',
+            npk: a.user?.npk ?? '',
+            date: DateFormat('dd/MM/yyyy').format(a.tanggal),
+            jamMasuk: a.clockIn.substring(0, 5), // HH:mm
+            status: _formatStatusDisplay(a.status),
+            clockInImageUrl: a.clockInImageUrl,
+            clockOutImageUrl: a.clockOutImageUrl,
+          );
+        }).toList();
+
+        // Sync filtered list
+        filteredAttendanceList.value = displayList;
+
+        AppLogger.info('AdminDashboard: Loaded ${attendances.length} attendance records');
+      } else {
+        // Show error message
+        if (result.error != null) {
+          Get.snackbar(
+            'Error',
+            result.error!,
+            snackPosition: SnackPosition.BOTTOM,
+            backgroundColor: AppColors.error,
+            colorText: Colors.white,
+          );
+        }
+      }
+    } catch (e) {
+      AppLogger.error('AdminDashboard: Error loading dashboard data', e);
+      Get.snackbar(
+        'Error',
+        'Gagal memuat data absensi',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: AppColors.error,
+        colorText: Colors.white,
+      );
+    } finally {
+      isLoadingDashboard.value = false;
+    }
+  }
+
+  String _formatStatusDisplay(String status) {
+    switch (status.toLowerCase()) {
+      case 'hadir':
+        return 'Hadir';
+      case 'terlambat':
+        return 'Terlambat';
+      case 'izin':
+        return 'Izin';
+      case 'sakit':
+        return 'Sakit';
+      default:
+        return status;
+    }
   }
 
   @override

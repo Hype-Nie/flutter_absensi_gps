@@ -82,16 +82,28 @@ class AdminDashboardPage extends StatelessWidget {
           ),
         ],
       ),
-      child: TextField(
-        onChanged: controller.onSearch,
-        decoration: InputDecoration(
-          hintText: 'Cari berdasarkan nama atau NPK...',
-          hintStyle: const TextStyle(color: AppColors.grey400, fontSize: 14),
-          prefixIcon: const Icon(Icons.search, color: AppColors.grey400),
-          border: InputBorder.none,
-          contentPadding: const EdgeInsets.symmetric(
-            horizontal: 16,
-            vertical: 14,
+      child: Obx(
+        () => TextField(
+          onChanged: controller.onSearch,
+          controller: TextEditingController(text: controller.searchQuery.value)
+            ..selection = TextSelection.fromPosition(
+              TextPosition(offset: controller.searchQuery.value.length),
+            ),
+          decoration: InputDecoration(
+            hintText: 'Cari berdasarkan nama atau NPK...',
+            hintStyle: const TextStyle(color: AppColors.grey400, fontSize: 14),
+            prefixIcon: const Icon(Icons.search, color: AppColors.grey400),
+            suffixIcon: controller.searchQuery.value.isNotEmpty
+                ? IconButton(
+                    icon: const Icon(Icons.clear, color: AppColors.grey400),
+                    onPressed: () => controller.onSearch(''),
+                  )
+                : null,
+            border: InputBorder.none,
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: 16,
+              vertical: 14,
+            ),
           ),
         ),
       ),
@@ -100,23 +112,27 @@ class AdminDashboardPage extends StatelessWidget {
 
   Widget _buildAttendanceList(AdminDashboardController controller) {
     return Obx(
-      () => Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            'Absensi Hari Ini',
-            style: const TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.w600,
-              color: AppColors.grey800,
+      () {
+        final displayList = controller.displayList;
+
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Absensi Hari Ini (${displayList.length})',
+              style: const TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+                color: AppColors.grey800,
+              ),
             ),
-          ),
-          const SizedBox(height: 12),
-          ...controller.attendanceList.map(
+            const SizedBox(height: 12),
+          ...displayList.map(
             (attendance) => DashboardAttendanceItem(attendance: attendance),
           ),
         ],
-      ),
+      );
+    },
     );
   }
 }
