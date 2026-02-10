@@ -7,6 +7,7 @@ import '../../../../data/services/attendance_service.dart';
 import '../../../../data/models/attendance_history_model.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/services/security_service.dart';
+import '../../../../core/utils/logger.dart';
 import '../../../../routes/app_routes.dart';
 
 class PhotoValidationController extends GetxController {
@@ -74,11 +75,21 @@ class PhotoValidationController extends GetxController {
     if (attendance != null) {
       todayAttendance.value = attendance;
 
+      AppLogger.info(
+        'PhotoValidation: Today attendance found - ID: ${attendance.id}, '
+        'ClockIn: ${attendance.clockIn}, ClockOut: ${attendance.clockOut ?? "null"}',
+      );
+
       // If already checked in but not checked out
       if (attendance.clockOut == null) {
         isClockOut.value = true;
+        AppLogger.info('PhotoValidation: User can clock out, validating time...');
         _checkIfCanClockOut();
+      } else {
+        AppLogger.info('PhotoValidation: User already checked out today');
       }
+    } else {
+      AppLogger.info('PhotoValidation: No attendance found for today');
     }
   }
 
@@ -86,21 +97,62 @@ class PhotoValidationController extends GetxController {
     final attendance = todayAttendance.value;
     if (attendance == null) return;
 
-    // Use NTP time if available, otherwise fall back to device time
-    final now = accurateTime.value ?? DateTime.now();
-    final nineAM = DateTime(now.year, now.month, now.day, 9, 0, 0);
+    // Always fetch fresh NTP time for clock out validation
+    // This ensures we have the current time, not the old GPS validation time
+    _validateClockOutTime();
+  }
 
-    if (now.isAfter(nineAM) || now.isAtSameMomentAs(nineAM)) {
-      canSubmit.value = true;
-      timeUntilCanSubmit.value = '';
-    } else {
-      canSubmit.value = false;
-      final minutesUntilNine = nineAM.difference(now).inMinutes;
-      timeUntilCanSubmit.value =
-          'Tunggu $minutesUntilNine menit lagi untuk clock out';
+  Future<void> _validateClockOutTime() async {
+    try {
+      // Fetch fresh NTP time
+      final now = await _securityService.getAccurateTime();
+      final today = DateTime(now.year, now.month, now.day);
+      final nineAM = DateTime(today.year, today.month, today.day, 9, 0, 0);
 
-      // Auto-check again after a minute
-      Future.delayed(const Duration(minutes: 1), _checkIfCanClockOut);
+      AppLogger.info(
+        'PhotoValidation: Clock out time check - '
+        'Now: $now, NineAM: $nineAM',
+      );
+
+      if (now.isAfter(nineAM) || now.isAtSameMomentAs(nineAM)) {
+        canSubmit.value = true;
+        timeUntilCanSubmit.value = '';
+        AppLogger.info('PhotoValidation: Clock out ALLOWED - time is >= 09:00');
+      } else {
+        canSubmit.value = false;
+        final minutesUntilNine = nineAM.difference(now).inMinutes;
+        timeUntilCanSubmit.value =
+            'Clock out hanya bisa setelah jam 09:00. Tunggu $minutesUntilNine menit lagi';
+        AppLogger.warning(
+          'PhotoValidation: Clock out BLOCKED - $minutesUntilNine minutes until 09:00',
+        );
+
+        // Auto-check again after a minute
+        Future.delayed(const Duration(minutes: 1), _validateClockOutTime);
+      }
+    } catch (e) {
+      AppLogger.error('PhotoValidation: NTP time fetch failed, using device time', e);
+      // If NTP fails, use device time as fallback
+      final now = DateTime.now();
+      final today = DateTime(now.year, now.month, now.day);
+      final nineAM = DateTime(today.year, today.month, today.day, 9, 0, 0);
+
+      if (now.isAfter(nineAM) || now.isAtSameMomentAs(nineAM)) {
+        canSubmit.value = true;
+        timeUntilCanSubmit.value = '';
+        AppLogger.info('PhotoValidation: Clock out ALLOWED (device time)');
+      } else {
+        canSubmit.value = false;
+        final minutesUntilNine = nineAM.difference(now).inMinutes;
+        timeUntilCanSubmit.value =
+            'Clock out hanya bisa setelah jam 09:00. Tunggu $minutesUntilNine menit lagi';
+        AppLogger.warning(
+          'PhotoValidation: Clock out BLOCKED (device time) - $minutesUntilNine minutes until 09:00',
+        );
+
+        // Auto-check again after a minute
+        Future.delayed(const Duration(minutes: 1), _validateClockOutTime);
+      }
     }
   }
 
