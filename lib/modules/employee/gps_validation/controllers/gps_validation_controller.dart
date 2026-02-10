@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:latlong2/latlong.dart';
 import '../../../../routes/app_routes.dart';
+import '../../../../core/services/security_service.dart';
 
 class LocationPoint {
   final String name;
@@ -12,12 +13,19 @@ class LocationPoint {
 }
 
 class GpsValidationController extends GetxController {
+  final SecurityService _securityService = Get.find<SecurityService>();
+
   final isLoading = false.obs;
   final isLocationValid = false.obs;
   final currentPosition = Rxn<Position>();
   final attendanceType = ''.obs;
   final nearestPoint = Rxn<LocationPoint>();
   final distanceToNearest = 0.0.obs;
+
+  // Security status
+  final isSecurityChecking = false.obs;
+  final securityWarnings = <String>[].obs;
+  final securityScore = 100.obs;
 
   // Validation radius in meters
   final double validationRadius = 200.0;
@@ -93,7 +101,7 @@ class GpsValidationController extends GetxController {
     }
   }
 
-  void validateLocation() {
+  Future<void> validateLocation() async {
     if (currentPosition.value == null) {
       Get.snackbar(
         'Error',
@@ -102,6 +110,24 @@ class GpsValidationController extends GetxController {
         backgroundColor: Colors.red,
         colorText: Colors.white,
       );
+      return;
+    }
+
+    // Show loading for security check
+    isSecurityChecking.value = true;
+
+    // Perform comprehensive security check
+    final securityReport = await _securityService.performSecurityCheck(
+      currentPosition.value!,
+    );
+
+    isSecurityChecking.value = false;
+    securityScore.value = securityReport.securityScore;
+    securityWarnings.value = securityReport.warnings;
+
+    // Check if security check passed
+    if (!securityReport.isSecure) {
+      _showSecurityWarningDialog(securityReport);
       return;
     }
 
@@ -146,6 +172,7 @@ class GpsValidationController extends GetxController {
             'type': attendanceType.value,
             'latitude': currentPosition.value!.latitude,
             'longitude': currentPosition.value!.longitude,
+            'accurateTime': securityReport.accurateTime, // Pass NTP time
           },
         );
       });
@@ -160,6 +187,78 @@ class GpsValidationController extends GetxController {
         duration: const Duration(seconds: 4),
       );
     }
+  }
+
+  void _showSecurityWarningDialog(SecurityReport report) {
+    Get.dialog(
+      AlertDialog(
+        icon: Icon(Icons.block, color: Colors.red, size: 48),
+        title: const Text('Absensi Ditolak', style: TextStyle(fontSize: 18)),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'Terdeteksi aktivitas mencurigakan. Anda tidak dapat melakukan absensi.',
+              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+            ),
+            const SizedBox(height: 12),
+            ...report.warnings.map(
+              (warning) => Padding(
+                padding: const EdgeInsets.only(bottom: 8, left: 8),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text('• ', style: TextStyle(fontSize: 14)),
+                    Expanded(
+                      child: Text(warning, style: TextStyle(fontSize: 13)),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            const SizedBox(height: 12),
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: Colors.red[50],
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: Colors.red, width: 1),
+              ),
+              child: Row(
+                children: [
+                  Icon(Icons.block, color: Colors.red, size: 20),
+                  const SizedBox(width: 8),
+                  Text(
+                    'Skor Keamanan: ${report.securityScore}% - GAGAL',
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      color: Colors.red,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 12),
+            const Text(
+              'Silakan periksa perangkat Anda dan hubungi admin jika ini adalah kesalahan.',
+              style: TextStyle(fontSize: 12, color: Colors.grey),
+            ),
+          ],
+        ),
+        actions: [
+          ElevatedButton(
+            onPressed: () => Get.back(closeOverlays: true),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.grey,
+              foregroundColor: Colors.white,
+            ),
+            child: const Text('Kembali'),
+          ),
+        ],
+      ),
+      barrierDismissible: false,
+    );
   }
 
   void refreshLocation() {

@@ -6,11 +6,13 @@ import '../../../../data/services/auth_service.dart';
 import '../../../../data/services/attendance_service.dart';
 import '../../../../data/models/attendance_history_model.dart';
 import '../../../../core/constants/app_colors.dart';
+import '../../../../core/services/security_service.dart';
 import '../../../../routes/app_routes.dart';
 
 class PhotoValidationController extends GetxController {
   final AuthService _authService = Get.find<AuthService>();
   final AttendanceService _attendanceService = Get.find<AttendanceService>();
+  final SecurityService _securityService = Get.find<SecurityService>();
 
   final isLoading = false.obs;
   final capturedImage = Rxn<File>();
@@ -20,6 +22,12 @@ class PhotoValidationController extends GetxController {
   final attendanceType = ''.obs;
   final latitude = 0.0.obs;
   final longitude = 0.0.obs;
+
+  // NTP accurate time (independent of device time)
+  final accurateTime = Rxn<DateTime>();
+
+  // Security warnings from GPS validation
+  final securityWarnings = <String>[].obs;
 
   // Clock-in/out state
   final isClockOut = false.obs;
@@ -36,6 +44,17 @@ class PhotoValidationController extends GetxController {
     attendanceType.value = args?['type'] ?? 'hadir';
     latitude.value = args?['latitude'] ?? 0.0;
     longitude.value = args?['longitude'] ?? 0.0;
+
+    // Receive NTP time from GPS validation
+    if (args != null && args['accurateTime'] != null) {
+      accurateTime.value = args['accurateTime'] as DateTime;
+    }
+
+    // Receive security warnings if any
+    if (args != null && args['securityWarnings'] != null) {
+      final warnings = args['securityWarnings'] as List;
+      securityWarnings.value = warnings.cast<String>();
+    }
 
     _checkTodayAttendance();
   }
@@ -67,8 +86,8 @@ class PhotoValidationController extends GetxController {
     final attendance = todayAttendance.value;
     if (attendance == null) return;
 
-    // Check if current time is 9 AM or later
-    final now = DateTime.now();
+    // Use NTP time if available, otherwise fall back to device time
+    final now = accurateTime.value ?? DateTime.now();
     final nineAM = DateTime(now.year, now.month, now.day, 9, 0, 0);
 
     if (now.isAfter(nineAM) || now.isAtSameMomentAs(nineAM)) {
@@ -105,7 +124,7 @@ class PhotoValidationController extends GetxController {
           Get.snackbar(
             'Peringatan',
             'Ukuran foto terlalu besar (${fileSizeInMB.toStringAsFixed(2)} MB). Silakan ambil ulang dengan pencahayaan lebih rendah.',
-            snackPosition: SnackPosition.BOTTOM,
+            snackPosition: SnackPosition.TOP,
             backgroundColor: AppColors.warning,
             colorText: Colors.white,
             duration: const Duration(seconds: 4),
@@ -121,7 +140,7 @@ class PhotoValidationController extends GetxController {
       Get.snackbar(
         'Error',
         'Gagal mengambil foto: $e',
-        snackPosition: SnackPosition.BOTTOM,
+        snackPosition: SnackPosition.TOP,
         backgroundColor: AppColors.error,
         colorText: Colors.white,
       );
@@ -133,19 +152,19 @@ class PhotoValidationController extends GetxController {
       Get.snackbar(
         'Error',
         'Silakan ambil foto terlebih dahulu',
-        snackPosition: SnackPosition.BOTTOM,
+        snackPosition: SnackPosition.TOP,
         backgroundColor: AppColors.warning,
         colorText: Colors.white,
       );
       return;
     }
 
-    // Check if can submit (for clock-out, must wait 1 hour)
+    // Check if can submit (for clock-out, must wait until 9 AM)
     if (!canSubmit.value) {
       Get.snackbar(
         'Perhatian',
         timeUntilCanSubmit.value,
-        snackPosition: SnackPosition.BOTTOM,
+        snackPosition: SnackPosition.TOP,
         backgroundColor: AppColors.warning,
         colorText: Colors.white,
         duration: const Duration(seconds: 3),
@@ -158,7 +177,7 @@ class PhotoValidationController extends GetxController {
       Get.snackbar(
         'Error',
         'User tidak ditemukan. Silakan login kembali',
-        snackPosition: SnackPosition.BOTTOM,
+        snackPosition: SnackPosition.TOP,
         backgroundColor: AppColors.error,
         colorText: Colors.white,
       );
@@ -179,10 +198,13 @@ class PhotoValidationController extends GetxController {
           clockOutLong: longitude.value,
         );
       } else {
-        // Clock In
+        // Clock In - Use NTP time for accurate timestamp
+        final attendanceTime =
+            accurateTime.value ?? await _securityService.getAccurateTime();
+
         result = await _attendanceService.clockIn(
           userId: currentUser.id,
-          tanggal: DateTime.now(),
+          tanggal: attendanceTime,
           clockInImage: capturedImage.value!,
           clockInLat: latitude.value,
           clockInLong: longitude.value,
@@ -195,7 +217,7 @@ class PhotoValidationController extends GetxController {
         Get.snackbar(
           'Berhasil',
           isClockOut.value ? 'Clock out berhasil' : 'Clock in berhasil',
-          snackPosition: SnackPosition.BOTTOM,
+          snackPosition: SnackPosition.TOP,
           backgroundColor: AppColors.success,
           colorText: Colors.white,
           duration: const Duration(seconds: 2),
@@ -209,7 +231,9 @@ class PhotoValidationController extends GetxController {
               'type': attendanceType.value,
               'isCheckIn': !isClockOut.value,
               'attendanceData': result.data,
-              'capturedImage': capturedImage.value, // Pass local file for immediate display
+              'capturedImage':
+                  capturedImage.value, // Pass local file for immediate display
+              'accurateTime': accurateTime.value,
             },
           );
         });
@@ -232,7 +256,7 @@ class PhotoValidationController extends GetxController {
       Get.snackbar(
         'Error',
         'Terjadi kesalahan: $e',
-        snackPosition: SnackPosition.BOTTOM,
+        snackPosition: SnackPosition.TOP,
         backgroundColor: AppColors.error,
         colorText: Colors.white,
         duration: const Duration(seconds: 3),

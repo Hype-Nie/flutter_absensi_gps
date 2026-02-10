@@ -5,11 +5,9 @@ import '../../../../core/utils/helpers.dart';
 import '../../../../core/utils/logger.dart';
 import '../../../../data/services/auth_service.dart';
 import '../../../../data/services/attendance_service.dart';
-import '../../../../data/models/attendance_history_model.dart';
 import '../../../../routes/app_routes.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../data/models/dashboard_attendance_model.dart';
-import '../../../../data/models/employee_model.dart';
 import 'mixins/dashboard_data_mixin.dart';
 import 'mixins/employees_data_mixin.dart';
 import 'mixins/reports_data_mixin.dart';
@@ -76,28 +74,39 @@ class AdminDashboardController extends GetxController
 
         // Debug: log semua status untuk diagnosis
         for (var a in attendances) {
-          AppLogger.info('Attendance: ${a.user?.name} - status: "${a.status}" (lowercase: "${a.status.toLowerCase()}")');
+          AppLogger.info(
+            'Attendance: ${a.user?.name} - status: "${a.status}" (lowercase: "${a.status.toLowerCase()}")',
+          );
         }
 
         // Calculate totals dari SEMUA data absensi hari ini
-        totalHadir.value = attendances.where((a) => _isStatus(a.status, 'hadir')).length;
+        totalHadir.value = attendances
+            .where((a) => _isStatus(a.status, 'hadir'))
+            .length;
         totalIzin.value = attendances.where((a) {
-          final match = _isStatus(a.status, 'izin') || _isStatus(a.status, 'ijin');
+          final match =
+              _isStatus(a.status, 'izin') || _isStatus(a.status, 'ijin');
           if (!match && a.status.toLowerCase().contains('i')) {
             // Log status yang mengandung 'i' tapi tidak match
-            AppLogger.warning('Status with "i" but not matched: "${a.status}" for ${a.user?.name}');
+            AppLogger.warning(
+              'Status with "i" but not matched: "${a.status}" for ${a.user?.name}',
+            );
           }
           return match;
         }).length;
-        totalSakit.value = attendances.where((a) => _isStatus(a.status, 'sakit')).length;
-        totalTerlambat.value = attendances.where((a) => _isStatus(a.status, 'terlambat')).length;
+        totalSakit.value = attendances
+            .where((a) => _isStatus(a.status, 'sakit'))
+            .length;
+        totalTerlambat.value = attendances
+            .where((a) => _isStatus(a.status, 'terlambat'))
+            .length;
 
         // Build attendance list untuk display - SEMUA data tanpa batasan
         attendanceList.value = attendances.map((a) {
           return DashboardAttendanceModel(
             name: a.user?.name ?? 'Unknown',
             npk: a.user?.npk ?? '',
-            date: DateFormat('dd/MM/yyyy').format(a.tanggal),
+            date: DateFormat('dd/MM/yyyy').format(a.tanggal.toLocal()),
             jamMasuk: a.clockIn.substring(0, 5), // HH:mm
             status: _formatStatusDisplay(a.status),
             clockInImageUrl: a.clockInImageUrl,
@@ -108,14 +117,16 @@ class AdminDashboardController extends GetxController
         // Sync filtered list
         filteredAttendanceList.value = displayList;
 
-        AppLogger.info('AdminDashboard: Loaded ${attendances.length} attendance records for today');
+        AppLogger.info(
+          'AdminDashboard: Loaded ${attendances.length} attendance records for today',
+        );
       } else {
         // Show error message
         if (result.error != null) {
           Get.snackbar(
             'Error',
             result.error!,
-            snackPosition: SnackPosition.BOTTOM,
+            snackPosition: SnackPosition.TOP,
             backgroundColor: AppColors.error,
             colorText: Colors.white,
           );
@@ -126,7 +137,7 @@ class AdminDashboardController extends GetxController
       Get.snackbar(
         'Error',
         'Gagal memuat data absensi',
-        snackPosition: SnackPosition.BOTTOM,
+        snackPosition: SnackPosition.TOP,
         backgroundColor: AppColors.error,
         colorText: Colors.white,
       );
@@ -160,30 +171,42 @@ class AdminDashboardController extends GetxController
   Future<void> loadReports() async {
     try {
       isLoadingReports.value = true;
-      final month = selectedMonth.value.month;
-      final year = selectedMonth.value.year;
 
-      final result = await _attendanceService.getAttendanceByMonthYear(
-        month: month,
-        year: year,
+      // Debug: log date range being requested
+      final startStr = DateFormat('yyyy-MM-dd').format(startDate.value);
+      final endStr = DateFormat('yyyy-MM-dd').format(endDate.value);
+      AppLogger.info('Loading reports: $startStr to $endStr');
+
+      final result = await _attendanceService.getAttendanceByDateRange(
+        startDate: startDate.value,
+        endDate: endDate.value,
       );
 
       if (result.isSuccess && result.data != null) {
         reportAttendanceList.value = result.data!;
+
+        // Debug: log fetched data
+        AppLogger.info('Fetched ${result.data!.length} attendance records');
+        for (var item in result.data!) {
+          final localDate = item.tanggal.toLocal();
+          AppLogger.info(
+            '  - ${item.user?.name}: ${item.tanggal} (local: $localDate), status: ${item.status}',
+          );
+        }
       } else {
         if (result.error != null) {
           Get.snackbar(
             'Error',
             result.error!,
-            snackPosition: SnackPosition.BOTTOM,
+            snackPosition: SnackPosition.TOP,
             backgroundColor: AppColors.error,
             colorText: Colors.white,
           );
         }
         reportAttendanceList.clear();
       }
-    } catch (e) {
-      AppLogger.error('AdminDashboard: Error loading reports', e);
+    } catch (e, stackTrace) {
+      AppLogger.error('AdminDashboard: Error loading reports', e, stackTrace);
       reportAttendanceList.clear();
     } finally {
       isLoadingReports.value = false;
@@ -209,7 +232,10 @@ class AdminDashboardController extends GetxController
               await _authService.logout();
               Get.offAllNamed(AppRoutes.login);
             },
-            child: const Text('Keluar', style: TextStyle(color: AppColors.error)),
+            child: const Text(
+              'Keluar',
+              style: TextStyle(color: AppColors.error),
+            ),
           ),
         ],
       ),

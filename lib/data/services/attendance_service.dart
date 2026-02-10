@@ -693,6 +693,135 @@ class AttendanceService {
     }
   }
 
+  /// Get attendance by date range
+  /// GET /absensi?start_date={YYYY-MM-DD}&end_date={YYYY-MM-DD}
+  Future<AttendanceResult> getAttendanceByDateRange({
+    required DateTime startDate,
+    required DateTime endDate,
+    int perPage = 100,
+    bool fetchAll = true,
+  }) async {
+    try {
+      // Format start date as-is
+      final startStr = DateFormat('yyyy-MM-dd').format(startDate);
+      // Add 1 day to end date for API (API uses < comparison, not <=)
+      // This ensures records on the end date are included
+      final endStr = DateFormat('yyyy-MM-dd').format(endDate.add(const Duration(days: 1)));
+
+      final queryParams = <String, dynamic>{
+        'start_date': startStr,
+        'end_date': endStr,
+        'order_by': 'tanggal',
+        'order_dir': 'desc',
+        'per_page': perPage.toString(),
+      };
+
+      final queryString = queryParams.entries
+          .map((e) => '${e.key}=${Uri.encodeComponent(e.value.toString())}')
+          .join('&');
+
+      final endpoint = '/absensi?$queryString';
+
+      AppLogger.info(
+        'AttendanceService: Fetching attendance from $startStr to $endStr',
+      );
+
+      final response = await _apiProvider.get(endpoint);
+
+      AppLogger.info(
+        'AttendanceService: Response status: ${response.statusCode}',
+      );
+
+      if (response.statusCode == 200) {
+        final data = response.data as Map<String, dynamic>;
+
+        if (data['success'] == true) {
+          final attendanceData = data['data'];
+          List<AttendanceHistoryModel> allAttendees = [];
+
+          if (attendanceData is Map<String, dynamic> &&
+              attendanceData.containsKey('data')) {
+            final items = attendanceData['data'] as List;
+            final attendanceList = items
+                .map(
+                  (item) => AttendanceHistoryModel.fromJson(
+                    item as Map<String, dynamic>,
+                  ),
+                )
+                .toList();
+            allAttendees.addAll(attendanceList);
+
+            // Fetch all pages if requested
+            if (fetchAll) {
+              final meta = attendanceData['meta'] as Map<String, dynamic>?;
+              if (meta != null) {
+                final lastPage = meta['last_page'] as int? ?? 1;
+                final currentPage = meta['current_page'] as int? ?? 1;
+
+                for (int p = currentPage + 1; p <= lastPage; p++) {
+                  // For date range, we need to fetch all pages
+                  // Using the same endpoint with page parameter
+                  final pageEndpoint = '$queryString&page=$p';
+                  final pageResponse = await _apiProvider.get('/absensi?$pageEndpoint');
+
+                  if (pageResponse.statusCode == 200) {
+                    final pageData = pageResponse.data as Map<String, dynamic>;
+                    if (pageData['success'] == true) {
+                      final pageAttendanceData = pageData['data'];
+                      if (pageAttendanceData is Map<String, dynamic> &&
+                          pageAttendanceData.containsKey('data')) {
+                        final pageItems = pageAttendanceData['data'] as List;
+                        final pageList = pageItems
+                            .map(
+                              (item) => AttendanceHistoryModel.fromJson(
+                                item as Map<String, dynamic>,
+                              ),
+                            )
+                            .toList();
+                        allAttendees.addAll(pageList);
+                      }
+                    }
+                  }
+                }
+              }
+            }
+
+            AppLogger.info(
+              'AttendanceService: Found ${allAttendees.length} attendance records',
+            );
+            return AttendanceResult.success(allAttendees);
+          } else if (attendanceData is List) {
+            final attendanceList = attendanceData
+                .map(
+                  (item) => AttendanceHistoryModel.fromJson(
+                    item as Map<String, dynamic>,
+                  ),
+                )
+                .toList();
+            allAttendees.addAll(attendanceList);
+
+            AppLogger.info(
+              'AttendanceService: Found ${allAttendees.length} attendance records',
+            );
+            return AttendanceResult.success(allAttendees);
+          }
+        }
+
+        final message = data['message'] ?? 'Gagal memuat data absensi';
+        return AttendanceResult.failure(message);
+      }
+
+      return AttendanceResult.failure('Gagal memuat data absensi');
+    } on DioException catch (e) {
+      final errorMessage = _handleDioException(e);
+      AppLogger.error('AttendanceService: DioException', e, e.stackTrace);
+      return AttendanceResult.failure(errorMessage);
+    } catch (e, stackTrace) {
+      AppLogger.error('AttendanceService: Unexpected error', e, stackTrace);
+      return AttendanceResult.failure('Terjadi kesalahan: ${e.toString()}');
+    }
+  }
+
   /// Get today's attendance for user
   /// Returns the attendance record if exists, null if not found
   Future<AttendanceHistoryModel?> getTodayAttendance(String userId) async {

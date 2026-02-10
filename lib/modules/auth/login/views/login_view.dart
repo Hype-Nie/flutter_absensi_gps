@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
 import '../../../../core/constants/app_colors.dart';
+import '../../../../core/widgets/app_footer.dart';
 import '../controllers/login_controller.dart';
 
 class LoginView extends GetView<LoginController> {
@@ -25,26 +27,36 @@ class LoginView extends GetView<LoginController> {
                       'Login',
                       style: TextStyle(
                         fontSize: 32,
-                        fontWeight: FontWeight.w900, // Extra Bold
+                        fontWeight: FontWeight.w900,
                         color: AppColors.textPrimary,
                       ),
                     ),
-                    const SizedBox(height: 60),
+                    const SizedBox(height: 40),
 
-                    // Logo Placeholder
+                    // Perhutani Logo
                     Center(
-                      child: Container(
-                        width: 150,
-                        height: 150,
-                        color: AppColors.border, // Placeholder color
-                        alignment: Alignment.center,
-                        child: const Text(
-                          'Logo Apps',
-                          style: TextStyle(color: AppColors.textSecondary),
+                      child: SizedBox(
+                        width: 120,
+                        height: 120,
+                        child: SvgPicture.asset(
+                          'assets/images/Perhutani_logo.svg',
+                          placeholderBuilder: (context) => Container(
+                            width: 120,
+                            height: 120,
+                            decoration: BoxDecoration(
+                              color: AppColors.border,
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            alignment: Alignment.center,
+                            child: const Text(
+                              'Logo',
+                              style: TextStyle(color: AppColors.textSecondary),
+                            ),
+                          ),
                         ),
                       ),
                     ),
-                    const SizedBox(height: 16),
+                    const SizedBox(height: 24),
 
                     // "Perhutani Padangan"
                     const Text(
@@ -54,6 +66,17 @@ class LoginView extends GetView<LoginController> {
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
                         color: AppColors.textPrimary,
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+
+                    // "Sistem Absensi GPS Karyawan"
+                    const Text(
+                      'Sistem Absensi GPS Karyawan',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: AppColors.textSecondary,
                       ),
                     ),
                     const SizedBox(height: 60),
@@ -71,7 +94,7 @@ class LoginView extends GetView<LoginController> {
                     TextField(
                       controller: controller.npkController,
                       decoration: InputDecoration(
-                        hintText: 'NPK',
+                        hintText: 'Masukkan NPK',
                         hintStyle: const TextStyle(color: AppColors.textHint),
                         contentPadding: const EdgeInsets.symmetric(
                           horizontal: 16,
@@ -104,7 +127,7 @@ class LoginView extends GetView<LoginController> {
                         controller: controller.passwordController,
                         obscureText: !controller.isPasswordVisible.value,
                         decoration: InputDecoration(
-                          hintText: 'Password',
+                          hintText: 'Masukkan password',
                           hintStyle: const TextStyle(color: AppColors.textHint),
                           contentPadding: const EdgeInsets.symmetric(
                             horizontal: 16,
@@ -118,10 +141,6 @@ class LoginView extends GetView<LoginController> {
                             borderRadius: BorderRadius.circular(8),
                             borderSide: const BorderSide(color: AppColors.border),
                           ),
-                          // Assuming no icon in wireframe, but keeping visibility toggle for UX might be good.
-                          // Wireframe just shows plain text field. I'll omit the icon to be strict to wireframe
-                          // or add it subtly. I'll add it because it's standard UX, but keep it minimal.
-                          // User asked for "Modern UI", so a toggle is expected.
                           suffixIcon: IconButton(
                             icon: Icon(
                               controller.isPasswordVisible.value
@@ -143,7 +162,7 @@ class LoginView extends GetView<LoginController> {
                             ? null
                             : controller.login,
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: AppColors.primary, // Green
+                          backgroundColor: AppColors.primary,
                           foregroundColor: AppColors.textWhite,
                           padding: const EdgeInsets.symmetric(vertical: 16),
                           shape: RoundedRectangleBorder(
@@ -174,16 +193,8 @@ class LoginView extends GetView<LoginController> {
               ),
             ),
 
-            // Footer
-            Container(
-              padding: const EdgeInsets.all(16),
-              width: double.infinity,
-              alignment: Alignment.center,
-              child: const Text(
-                '@2026 Perhutani Padangan',
-                style: TextStyle(color: AppColors.textPrimary, fontSize: 12),
-              ),
-            ),
+            // App Footer
+            const AppFooter(),
           ],
         ),
       ),

@@ -220,11 +220,15 @@ class EmployeesView extends GetView<EmployeesController> {
                       ),
                     ),
                     const SizedBox(width: 8),
-                    Text(
-                      employee.role?.toUpperCase() ?? 'KARYAWAN',
-                      style: const TextStyle(
-                        fontSize: 12,
-                        color: AppColors.grey500,
+                    Expanded(
+                      child: Text(
+                        employee.displayPosition,
+                        style: const TextStyle(
+                          fontSize: 12,
+                          color: AppColors.grey600,
+                          fontWeight: FontWeight.w500,
+                        ),
+                        overflow: TextOverflow.ellipsis,
                       ),
                     ),
                   ],

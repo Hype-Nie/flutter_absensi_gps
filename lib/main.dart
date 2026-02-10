@@ -9,6 +9,7 @@ import 'package:intl/date_symbol_data_local.dart';
 import 'core/theme/app_theme.dart';
 import 'core/constants/app_strings.dart';
 import 'core/utils/logger.dart';
+import 'core/services/security_service.dart';
 import 'data/services/storage_service.dart';
 import 'data/services/location_service.dart';
 import 'data/services/auth_service.dart';
@@ -70,6 +71,9 @@ Future<void> _initServices() async {
 
     AppLogger.info('App: Initializing AttendanceService...');
     Get.put(AttendanceService(Get.find<ApiProvider>()));
+
+    AppLogger.info('App: Initializing SecurityService...');
+    Get.put(SecurityService.instance);
 
     AppLogger.info('App: All services initialized successfully');
   } catch (e, stackTrace) {

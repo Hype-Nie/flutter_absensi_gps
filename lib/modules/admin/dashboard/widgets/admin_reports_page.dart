@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import '../../../../../core/constants/app_colors.dart';
-import '../../../../data/models/attendance_history_model.dart';
 import '../controllers/admin_dashboard_controller.dart';
 
 class AdminReportsPage extends StatelessWidget {
@@ -25,10 +24,14 @@ class AdminReportsPage extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  _buildMonthSelector(controller),
+                  _buildDateRangeSelector(controller),
                   const SizedBox(height: 16),
+                  _buildQuickFilters(controller),
+                  const SizedBox(height: 12),
                   _buildSummaryCards(controller),
-                  const SizedBox(height: 24),
+                  const SizedBox(height: 16),
+                  _buildSearchAndFilter(controller),
+                  const SizedBox(height: 16),
                   _buildReportTable(controller),
                 ],
               ),
@@ -40,7 +43,7 @@ class AdminReportsPage extends StatelessWidget {
     );
   }
 
-  Widget _buildMonthSelector(AdminDashboardController controller) {
+  Widget _buildDateRangeSelector(AdminDashboardController controller) {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -68,7 +71,7 @@ class AdminReportsPage extends StatelessWidget {
                 ),
                 Obx(
                   () => Text(
-                    controller.reportMonthYearText,
+                    controller.dateRangeText,
                     style: const TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w600,
@@ -80,7 +83,7 @@ class AdminReportsPage extends StatelessWidget {
           ),
           Builder(
             builder: (context) => TextButton.icon(
-              onPressed: () => controller.selectMonth(context),
+              onPressed: () => controller.selectCustomDateRange(context),
               icon: const Icon(Icons.edit_calendar),
               label: const Text('Ubah'),
             ),
@@ -90,35 +93,122 @@ class AdminReportsPage extends StatelessWidget {
     );
   }
 
+  Widget _buildQuickFilters(AdminDashboardController controller) {
+    return Obx(
+      () {
+        final quickType = controller.quickFilterType.value;
+        return SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          child: Row(
+            children: [
+              _buildQuickFilterChip(
+                label: 'Hari Ini',
+                isSelected: quickType == 'today',
+                onTap: () => controller.setQuickFilter('today'),
+              ),
+              const SizedBox(width: 8),
+              _buildQuickFilterChip(
+                label: 'Kemarin',
+                isSelected: quickType == 'yesterday',
+                onTap: () => controller.setQuickFilter('yesterday'),
+              ),
+              const SizedBox(width: 8),
+              _buildQuickFilterChip(
+                label: '7 Hari Terakhir',
+                isSelected: quickType == 'last_7_days',
+                onTap: () => controller.setQuickFilter('last_7_days'),
+              ),
+              const SizedBox(width: 8),
+              _buildQuickFilterChip(
+                label: 'Bulan Ini',
+                isSelected: quickType == 'this_month',
+                onTap: () => controller.setQuickFilter('this_month'),
+              ),
+              const SizedBox(width: 8),
+              Builder(
+                builder: (context) => _buildQuickFilterChip(
+                  label: 'Custom',
+                  isSelected: quickType == 'custom',
+                  onTap: () => controller.selectCustomDateRange(context),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildQuickFilterChip({
+    required String label,
+    required bool isSelected,
+    required VoidCallback onTap,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+        decoration: BoxDecoration(
+          color: isSelected ? AppColors.primary : AppColors.surface,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(
+            color: isSelected ? AppColors.primary : AppColors.grey300,
+          ),
+        ),
+        child: Text(
+          label,
+          style: TextStyle(
+            fontSize: 13,
+            fontWeight: FontWeight.w500,
+            color: isSelected ? Colors.white : AppColors.grey700,
+          ),
+        ),
+      ),
+    );
+  }
+
   Widget _buildSummaryCards(AdminDashboardController controller) {
     return Obx(() {
-      return Row(
+      return Column(
         children: [
-          Expanded(
-            child: _buildReportSummaryCard(
-              title: 'Total Hadir',
-              value: controller.reportTotalHadir.toString(),
-              icon: Icons.check_circle_outline,
-              color: AppColors.success,
-            ),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: _buildReportSummaryCard(
-              title: 'Total Izin',
-              value: controller.reportTotalIzin.toString(),
-              icon: Icons.event_note_outlined,
-              color: AppColors.orange,
-            ),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: _buildReportSummaryCard(
-              title: 'Total Sakit',
-              value: controller.reportTotalSakit.toString(),
-              icon: Icons.medical_services_outlined,
-              color: AppColors.error,
-            ),
+          Row(
+            children: [
+              Expanded(
+                child: _buildReportSummaryCard(
+                  title: 'Total Hadir',
+                  value: controller.reportTotalHadir.toString(),
+                  icon: Icons.check_circle_outline,
+                  color: AppColors.success,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: _buildReportSummaryCard(
+                  title: 'Terlambat',
+                  value: controller.reportTotalTerlambat.toString(),
+                  icon: Icons.access_time,
+                  color: AppColors.warning,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: _buildReportSummaryCard(
+                  title: 'Total Izin',
+                  value: controller.reportTotalIzin.toString(),
+                  icon: Icons.event_note_outlined,
+                  color: AppColors.orange,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: _buildReportSummaryCard(
+                  title: 'Total Sakit',
+                  value: controller.reportTotalSakit.toString(),
+                  icon: Icons.medical_services_outlined,
+                  color: AppColors.error,
+                ),
+              ),
+            ],
           ),
         ],
       );
@@ -173,10 +263,93 @@ class AdminReportsPage extends StatelessWidget {
     );
   }
 
+  Widget _buildSearchAndFilter(AdminDashboardController controller) {
+    return Row(
+      children: [
+        Expanded(
+          child: Container(
+            decoration: BoxDecoration(
+              color: AppColors.surface,
+              borderRadius: BorderRadius.circular(12),
+              boxShadow: [
+                BoxShadow(
+                  color: AppColors.shadow.withValues(alpha: 0.05),
+                  blurRadius: 10,
+                  offset: const Offset(0, 4),
+                ),
+              ],
+            ),
+            child: Obx(
+              () => TextField(
+                onChanged: controller.onSearchReport,
+                controller: TextEditingController(text: controller.searchQuery.value)
+                  ..selection = TextSelection.fromPosition(
+                    TextPosition(offset: controller.searchQuery.value.length),
+                  ),
+                decoration: InputDecoration(
+                  hintText: 'Cari berdasarkan nama atau NPK...',
+                  hintStyle: const TextStyle(color: AppColors.grey400, fontSize: 14),
+                  prefixIcon: const Icon(Icons.search, color: AppColors.grey400),
+                  suffixIcon: controller.searchQuery.value.isNotEmpty
+                      ? IconButton(
+                          icon: const Icon(Icons.clear, color: AppColors.grey400),
+                          onPressed: () => controller.onSearchReport(''),
+                        )
+                      : null,
+                  border: InputBorder.none,
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 14,
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ),
+        const SizedBox(width: 12),
+        Container(
+          decoration: BoxDecoration(
+            color: AppColors.surface,
+            borderRadius: BorderRadius.circular(12),
+            boxShadow: [
+              BoxShadow(
+                color: AppColors.shadow.withValues(alpha: 0.05),
+                blurRadius: 10,
+                offset: const Offset(0, 4),
+              ),
+            ],
+          ),
+          child: Obx(
+            () => Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 12),
+              child: DropdownButtonHideUnderline(
+                child: DropdownButton<String>(
+                  value: controller.statusFilter.value.isEmpty ? null : controller.statusFilter.value,
+                  hint: const Text('Status', style: TextStyle(color: AppColors.grey600)),
+                  icon: const Icon(Icons.keyboard_arrow_down, color: AppColors.grey600),
+                  items: const [
+                    DropdownMenuItem(value: '', child: Text('Semua')),
+                    DropdownMenuItem(value: 'hadir', child: Text('Hadir')),
+                    DropdownMenuItem(value: 'terlambat', child: Text('Terlambat')),
+                    DropdownMenuItem(value: 'izin', child: Text('Izin')),
+                    DropdownMenuItem(value: 'sakit', child: Text('Sakit')),
+                  ],
+                  onChanged: (value) {
+                    controller.onStatusFilterChanged(value);
+                  },
+                ),
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
   Widget _buildReportTable(AdminDashboardController controller) {
     return Obx(
       () {
-        final attendanceData = controller.reportAttendanceList;
+        final attendanceData = controller.filteredReportList;
 
         if (attendanceData.isEmpty) {
           return _buildEmptyReportState();
@@ -258,7 +431,8 @@ class AdminReportsPage extends StatelessWidget {
                   rows: attendanceData.map((attendance) {
                     final nama = attendance.user?.name ?? '-';
                     final npk = attendance.user?.npk ?? '-';
-                    final tanggal = DateFormat('dd/MM/yyyy', 'id_ID').format(attendance.tanggal);
+                    // Use toLocal() for display to show date in user's timezone
+                    final tanggal = DateFormat('dd/MM/yyyy', 'id_ID').format(attendance.tanggal.toLocal());
                     final jamMasuk = attendance.clockIn.isNotEmpty
                         ? attendance.clockIn.substring(0, attendance.clockIn.length >= 5 ? 5 : attendance.clockIn.length)
                         : '-';
@@ -337,55 +511,75 @@ class AdminReportsPage extends StatelessWidget {
   }
 
   Widget _buildEmptyReportState() {
-    return Container(
-      padding: const EdgeInsets.all(48),
-      decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: [
-          BoxShadow(
-            color: AppColors.shadow.withValues(alpha: 0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Column(
-        children: [
-          Container(
-            padding: const EdgeInsets.all(20),
-            decoration: BoxDecoration(
-              color: AppColors.primary.withValues(alpha: 0.1),
-              shape: BoxShape.circle,
-            ),
-            child: const Icon(
-              Icons.assessment_outlined,
-              size: 48,
-              color: AppColors.primary,
-            ),
-          ),
-          const SizedBox(height: 16),
-          Text(
-            'Belum Ada Data Laporan',
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.w600,
-              color: AppColors.grey800,
-            ),
-          ),
-          const SizedBox(height: 8),
-          Obx(
-            () => Text(
-              'Data laporan untuk ${Get.find<AdminDashboardController>().reportMonthYearText} belum tersedia.',
-              style: const TextStyle(
-                fontSize: 14,
-                color: AppColors.grey500,
+    return Obx(
+      () {
+        final controller = Get.find<AdminDashboardController>();
+        final hasFilter = controller.statusFilter.value.isNotEmpty || controller.searchQuery.value.isNotEmpty;
+        final noResults = hasFilter && controller.filteredReportList.isEmpty;
+
+        return Container(
+          padding: const EdgeInsets.all(48),
+          decoration: BoxDecoration(
+            color: AppColors.surface,
+            borderRadius: BorderRadius.circular(12),
+            boxShadow: [
+              BoxShadow(
+                color: AppColors.shadow.withValues(alpha: 0.05),
+                blurRadius: 10,
+                offset: const Offset(0, 4),
               ),
-              textAlign: TextAlign.center,
-            ),
+            ],
           ),
-        ],
-      ),
+          child: Column(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(20),
+                decoration: BoxDecoration(
+                  color: AppColors.primary.withValues(alpha: 0.1),
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(
+                  noResults ? Icons.search_off : Icons.assessment_outlined,
+                  size: 48,
+                  color: AppColors.primary,
+                ),
+              ),
+              const SizedBox(height: 16),
+              Text(
+                noResults ? 'Tidak Ada Hasil' : 'Belum Ada Data Laporan',
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w600,
+                  color: AppColors.grey800,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                noResults
+                    ? 'Tidak ada data yang sesuai dengan filter atau pencarian Anda.'
+                    : 'Data laporan untuk ${controller.dateRangeText} belum tersedia.',
+                style: const TextStyle(
+                  fontSize: 14,
+                  color: AppColors.grey500,
+                ),
+                textAlign: TextAlign.center,
+              ),
+              if (noResults)
+                Padding(
+                  padding: const EdgeInsets.only(top: 16),
+                  child: TextButton.icon(
+                    onPressed: () {
+                      controller.onSearchReport('');
+                      controller.onStatusFilterChanged('');
+                    },
+                    icon: const Icon(Icons.refresh),
+                    label: const Text('Reset Filter'),
+                  ),
+                ),
+            ],
+          ),
+        );
+      },
     );
   }
 

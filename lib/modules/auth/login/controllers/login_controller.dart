@@ -43,7 +43,7 @@ class LoginController extends GetxController {
       Get.snackbar(
         'Success',
         AppStrings.successLogin,
-        snackPosition: SnackPosition.BOTTOM,
+        snackPosition: SnackPosition.TOP,
         backgroundColor: AppColors.success,
         colorText: AppColors.textWhite,
         duration: const Duration(seconds: 2),
@@ -60,11 +60,13 @@ class LoginController extends GetxController {
       }
     } catch (e) {
       // Show error message
-      final errorMessage = e is Exception ? e.toString().replaceFirst('Exception: ', '') : AppStrings.errorGeneral;
+      final errorMessage = e is Exception
+          ? e.toString().replaceFirst('Exception: ', '')
+          : AppStrings.errorGeneral;
       Get.snackbar(
         'Login Gagal',
         errorMessage,
-        snackPosition: SnackPosition.BOTTOM,
+        snackPosition: SnackPosition.TOP,
         backgroundColor: AppColors.error,
         colorText: AppColors.textWhite,
         duration: const Duration(seconds: 3),
@@ -79,7 +81,7 @@ class LoginController extends GetxController {
       Get.snackbar(
         'Error',
         'NPK wajib diisi',
-        snackPosition: SnackPosition.BOTTOM,
+        snackPosition: SnackPosition.TOP,
         backgroundColor: AppColors.error,
         colorText: AppColors.textWhite,
       );
@@ -90,7 +92,7 @@ class LoginController extends GetxController {
       Get.snackbar(
         'Error',
         'Password ${AppStrings.errorFieldRequired.toLowerCase()}',
-        snackPosition: SnackPosition.BOTTOM,
+        snackPosition: SnackPosition.TOP,
         backgroundColor: AppColors.error,
         colorText: AppColors.textWhite,
       );
@@ -101,7 +103,7 @@ class LoginController extends GetxController {
       Get.snackbar(
         'Error',
         AppStrings.errorPasswordTooShort,
-        snackPosition: SnackPosition.BOTTOM,
+        snackPosition: SnackPosition.TOP,
         backgroundColor: AppColors.error,
         colorText: AppColors.textWhite,
       );

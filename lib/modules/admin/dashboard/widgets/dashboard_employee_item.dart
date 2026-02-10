@@ -80,7 +80,7 @@ class DashboardEmployeeItem extends StatelessWidget {
                     ),
                     const SizedBox(width: 8),
                     Text(
-                      employee.position,
+                      employee.displayPosition,
                       style: const TextStyle(fontSize: 12, color: AppColors.grey500),
                     ),
                   ],

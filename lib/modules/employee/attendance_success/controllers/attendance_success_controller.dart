@@ -42,8 +42,8 @@ class AttendanceSuccessController extends GetxController {
     final data = attendanceData.value;
     if (data == null) return;
 
-    // Set date from API
-    currentDate.value = DateFormat('dd/MM/yyyy').format(data.tanggal);
+    // Set date from API (use local time/WIB)
+    currentDate.value = DateFormat('dd/MM/yyyy').format(data.tanggal.toLocal());
     // Set time from API (clock_in/clock_out format: "HH:mm:ss")
     if (isCheckIn.value) {
       currentTime.value = data.clockIn.substring(0, 5); // Get HH:mm only

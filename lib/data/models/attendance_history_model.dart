@@ -129,7 +129,9 @@ class AttendanceHistoryModel {
       'November',
       'Desember',
     ];
-    return '${tanggal.day} ${months[tanggal.month]} ${tanggal.year}';
+    // Use local time (WIB) for display
+    final localDate = tanggal.toLocal();
+    return '${localDate.day} ${months[localDate.month]} ${localDate.year}';
   }
 
   /// Get full URL for clock-in image

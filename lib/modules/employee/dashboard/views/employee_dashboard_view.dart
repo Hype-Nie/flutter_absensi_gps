@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../../../core/constants/app_colors.dart';
+import '../../../../core/widgets/app_footer.dart';
 import '../controllers/employee_dashboard_controller.dart';
 import '../widgets/employee_stat_card.dart';
 import '../widgets/employee_attendance_item.dart';
@@ -40,7 +41,7 @@ class EmployeeDashboardView extends GetView<EmployeeDashboardController> {
                 ),
               ),
             ),
-            _buildFooter(),
+            const AppFooter(),
           ],
         ),
       ),
@@ -250,19 +251,6 @@ class EmployeeDashboardView extends GetView<EmployeeDashboardController> {
             style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
           ),
         ),
-      ),
-    );
-  }
-
-  Widget _buildFooter() {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      color: AppColors.grey300,
-      width: double.infinity,
-      alignment: Alignment.center,
-      child: const Text(
-        '@2026 Perhutani Padangan',
-        style: TextStyle(color: AppColors.textPrimary, fontSize: 12),
       ),
     );
   }

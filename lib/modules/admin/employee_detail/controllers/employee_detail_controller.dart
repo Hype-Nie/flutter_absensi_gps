@@ -156,4 +156,61 @@ class EmployeeDetailController extends GetxController {
   void goBack() {
     Get.back();
   }
+
+  /// Get display position with fallbacks
+  /// Uses position if available, otherwise uses role with department, then NPK-based info
+  String getDisplayPosition() {
+    final emp = employee.value;
+    if (emp == null) return '-';
+
+    final position = emp['position']?.toString();
+    final role = emp['role']?.toString();
+    final department = emp['department']?.toString();
+    final npk = emp['npk']?.toString() ?? '';
+
+    // Priority 1: Position if available and meaningful
+    if (position != null &&
+        position.isNotEmpty &&
+        position != 'Staff' &&
+        position != '-') {
+      return position;
+    }
+
+    // Priority 2: Role with department
+    if (role != null && role.isNotEmpty) {
+      final roleDisplay = role == 'karyawan'
+          ? 'Karyawan'
+          : role == 'admin'
+          ? 'Admin'
+          : role;
+      if (department != null && department.isNotEmpty && department != '-') {
+        return '$roleDisplay - $department';
+      }
+      return roleDisplay;
+    }
+
+    // Priority 3: Department only
+    if (department != null && department.isNotEmpty && department != '-') {
+      return department;
+    }
+
+    // Priority 4: Show NPK-based info as last resort
+    if (npk.isNotEmpty) {
+      return 'Staff (NPK: $npk)';
+    }
+
+    return 'Staff';
+  }
+
+  /// Get display department with fallback
+  String getDisplayDepartment() {
+    final emp = employee.value;
+    if (emp == null) return '-';
+
+    final department = emp['department']?.toString();
+    if (department != null && department.isNotEmpty && department != '-') {
+      return department;
+    }
+    return '-';
+  }
 }

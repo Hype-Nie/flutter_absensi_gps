@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 import '../../../../core/constants/app_colors.dart';
+import '../../../../core/widgets/app_footer.dart';
 import '../controllers/gps_validation_controller.dart';
 
 class GpsValidationView extends GetView<GpsValidationController> {
@@ -20,7 +21,7 @@ class GpsValidationView extends GetView<GpsValidationController> {
           children: [
             _buildHeader(),
             Expanded(child: _buildMapArea()),
-            _buildFooter(),
+            const AppFooter(),
           ],
         ),
       ),
@@ -380,19 +381,6 @@ class GpsValidationView extends GetView<GpsValidationController> {
                   style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
                 ),
         ),
-      ),
-    );
-  }
-
-  Widget _buildFooter() {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      color: AppColors.grey300,
-      width: double.infinity,
-      alignment: Alignment.center,
-      child: const Text(
-        '@2026 Perhutani Padangan',
-        style: TextStyle(color: AppColors.textPrimary, fontSize: 12),
       ),
     );
   }

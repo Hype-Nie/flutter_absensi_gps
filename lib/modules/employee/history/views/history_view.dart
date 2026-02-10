@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../../../core/constants/app_colors.dart';
+import '../../../../core/widgets/app_footer.dart';
 import '../../../../data/models/attendance_history_model.dart';
 import '../controllers/history_controller.dart';
 
@@ -218,17 +219,7 @@ class HistoryView extends GetView<HistoryController> {
               }),
             ),
 
-            // Footer
-            Container(
-              padding: const EdgeInsets.all(16),
-              color: AppColors.grey300,
-              width: double.infinity,
-              alignment: Alignment.center,
-              child: const Text(
-                '@2026 Perhutani Padangan',
-                style: TextStyle(color: AppColors.grey600, fontSize: 12),
-              ),
-            ),
+            const AppFooter(),
           ],
         ),
       ),

@@ -1,7 +1,7 @@
-import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../../../core/constants/app_colors.dart';
+import '../../../../core/widgets/app_footer.dart';
 import '../controllers/attendance_success_controller.dart';
 
 class AttendanceSuccessView extends GetView<AttendanceSuccessController> {
@@ -163,20 +163,7 @@ class AttendanceSuccessView extends GetView<AttendanceSuccessController> {
               ),
             ),
 
-            // Footer
-            Container(
-              padding: const EdgeInsets.all(16),
-              color: Colors.grey[300],
-              width: double.infinity,
-              alignment: Alignment.center,
-              child: const Text(
-                '@2026 Perhutani Padangan',
-                style: TextStyle(
-                  color: Colors.black87,
-                  fontSize: 12,
-                ),
-              ),
-            ),
+            const AppFooter(),
           ],
         ),
       ),

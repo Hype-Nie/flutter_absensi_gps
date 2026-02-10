@@ -3,8 +3,8 @@ class EmployeeModel {
   final String id;
   final String name;
   final String npk;
-  final String position;
-  final String department;
+  final String? position;
+  final String? department;
   final String? role;
   final DateTime? createdAt;
   final DateTime? updatedAt;
@@ -13,8 +13,8 @@ class EmployeeModel {
     required this.id,
     required this.name,
     required this.npk,
-    required this.position,
-    required this.department,
+    this.position,
+    this.department,
     this.role,
     this.createdAt,
     this.updatedAt,
@@ -26,8 +26,8 @@ class EmployeeModel {
       id: json['id']?.toString() ?? '',
       name: json['nama'] ?? json['name'] ?? '',
       npk: json['npk'] ?? '',
-      position: json['position'] ?? 'Staff',
-      department: json['department'] ?? '-',
+      position: json['position'],
+      department: json['department'],
       role: json['role'],
       createdAt: json['created_at'] != null
           ? DateTime.tryParse(json['created_at'])
@@ -45,8 +45,8 @@ class EmployeeModel {
       id: user['id']?.toString() ?? '',
       name: user['nama'] ?? '',
       npk: user['npk'] ?? '',
-      position: 'Staff',
-      department: '-',
+      position: user['position'],
+      department: user['department'],
       role: user['role'],
       createdAt: DateTime.tryParse(user['created_at']),
       updatedAt: DateTime.tryParse(user['updated_at']),
@@ -79,8 +79,8 @@ class EmployeeModel {
     required String id,
     required String name,
     required String npk,
-    required String position,
-    required String department,
+    String? position,
+    String? department,
     String? role,
   }) {
     return EmployeeModel(
@@ -114,5 +114,50 @@ class EmployeeModel {
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
     );
+  }
+
+  /// Get display position with fallbacks
+  /// Uses position if available, otherwise uses role with department, then NPK-based info
+  String get displayPosition {
+    // Priority 1: Position if available and meaningful
+    if (position != null &&
+        position!.isNotEmpty &&
+        position != 'Staff' &&
+        position != '-') {
+      return position!;
+    }
+
+    // Priority 2: Role with department
+    if (role != null && role!.isNotEmpty) {
+      final roleDisplay = role == 'karyawan'
+          ? 'Karyawan'
+          : role == 'admin'
+          ? 'Admin'
+          : role!;
+      if (department != null && department!.isNotEmpty && department != '-') {
+        return '$roleDisplay - $department';
+      }
+      return roleDisplay;
+    }
+
+    // Priority 3: Department only
+    if (department != null && department!.isNotEmpty && department != '-') {
+      return department!;
+    }
+
+    // Priority 4: Show NPK-based info as last resort
+    if (npk.isNotEmpty) {
+      return 'Staff (NPK: $npk)';
+    }
+
+    return 'Staff';
+  }
+
+  /// Get display department with fallback
+  String get displayDepartment {
+    if (department != null && department!.isNotEmpty && department != '-') {
+      return department!;
+    }
+    return '-';
   }
 }
