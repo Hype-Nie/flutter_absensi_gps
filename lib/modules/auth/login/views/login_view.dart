@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
 import '../../../../core/constants/app_colors.dart';
+import '../../../../core/widgets/app_footer.dart';
 import '../controllers/login_controller.dart';
 
 class LoginView extends GetView<LoginController> {
@@ -9,7 +11,7 @@ class LoginView extends GetView<LoginController> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: AppColors.surface,
       body: SafeArea(
         child: Column(
           children: [
@@ -25,27 +27,37 @@ class LoginView extends GetView<LoginController> {
                       'Login',
                       style: TextStyle(
                         fontSize: 32,
-                        fontWeight: FontWeight.w900, // Extra Bold
-                        color: Colors.black,
+                        fontWeight: FontWeight.w900,
+                        color: AppColors.textPrimary,
                       ),
                     ),
-                    const SizedBox(height: 60),
+                    const SizedBox(height: 40),
 
-                    // Logo Placeholder
+                    // Perhutani Logo
                     Center(
-                      child: Container(
-                        width: 150,
-                        height: 150,
-                        color: Colors.grey[300], // Placeholder color
-                        alignment: Alignment.center,
-                        child: const Text(
-                          'Logo Apps',
-                          style: TextStyle(color: Colors.black54),
+                      child: SizedBox(
+                        width: 120,
+                        height: 120,
+                        child: SvgPicture.asset(
+                          'assets/images/Perhutani_logo.svg',
+                          placeholderBuilder: (context) => Container(
+                            width: 120,
+                            height: 120,
+                            decoration: BoxDecoration(
+                              color: AppColors.border,
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            alignment: Alignment.center,
+                            child: const Text(
+                              'Logo',
+                              style: TextStyle(color: AppColors.textSecondary),
+                            ),
+                          ),
                         ),
                       ),
                     ),
-                    const SizedBox(height: 16),
-                    
+                    const SizedBox(height: 24),
+
                     // "Perhutani Padangan"
                     const Text(
                       'Perhutani Padangan',
@@ -53,7 +65,18 @@ class LoginView extends GetView<LoginController> {
                       style: TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
-                        color: Colors.black,
+                        color: AppColors.textPrimary,
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+
+                    // "Sistem Absensi GPS Karyawan"
+                    const Text(
+                      'Sistem Absensi GPS Karyawan',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: AppColors.textSecondary,
                       ),
                     ),
                     const SizedBox(height: 60),
@@ -64,25 +87,26 @@ class LoginView extends GetView<LoginController> {
                       style: TextStyle(
                         fontWeight: FontWeight.w600,
                         fontSize: 14,
+                        color: AppColors.textPrimary,
                       ),
                     ),
                     const SizedBox(height: 8),
                     TextField(
                       controller: controller.npkController,
                       decoration: InputDecoration(
-                        hintText: 'NPK',
-                        hintStyle: TextStyle(color: Colors.grey[400]),
+                        hintText: 'Masukkan NPK',
+                        hintStyle: const TextStyle(color: AppColors.textHint),
                         contentPadding: const EdgeInsets.symmetric(
-                          horizontal: 16, 
+                          horizontal: 16,
                           vertical: 16,
                         ),
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(8),
-                          borderSide: BorderSide(color: Colors.grey[300]!),
+                          borderSide: const BorderSide(color: AppColors.border),
                         ),
                         enabledBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(8),
-                          borderSide: BorderSide(color: Colors.grey[300]!),
+                          borderSide: const BorderSide(color: AppColors.border),
                         ),
                       ),
                     ),
@@ -94,94 +118,83 @@ class LoginView extends GetView<LoginController> {
                       style: TextStyle(
                         fontWeight: FontWeight.w600,
                         fontSize: 14,
+                        color: AppColors.textPrimary,
                       ),
                     ),
                     const SizedBox(height: 8),
-                    Obx(() => TextField(
-                      controller: controller.passwordController,
-                      obscureText: !controller.isPasswordVisible.value,
-                      decoration: InputDecoration(
-                        hintText: 'Password',
-                        hintStyle: TextStyle(color: Colors.grey[400]),
-                        contentPadding: const EdgeInsets.symmetric(
-                          horizontal: 16, 
-                          vertical: 16,
-                        ),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(8),
-                          borderSide: BorderSide(color: Colors.grey[300]!),
-                        ),
-                        enabledBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(8),
-                          borderSide: BorderSide(color: Colors.grey[300]!),
-                        ),
-                        // Assuming no icon in wireframe, but keeping visibility toggle for UX might be good.
-                        // Wireframe just shows plain text field. I'll omit the icon to be strict to wireframe 
-                        // or add it subtly. I'll add it because it's standard UX, but keep it minimal.
-                        // User asked for "Modern UI", so a toggle is expected.
-                        suffixIcon: IconButton(
-                          icon: Icon(
-                            controller.isPasswordVisible.value
-                                ? Icons.visibility_off
-                                : Icons.visibility,
-                            color: Colors.grey,
+                    Obx(
+                      () => TextField(
+                        controller: controller.passwordController,
+                        obscureText: !controller.isPasswordVisible.value,
+                        decoration: InputDecoration(
+                          hintText: 'Masukkan password',
+                          hintStyle: const TextStyle(color: AppColors.textHint),
+                          contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 16,
                           ),
-                          onPressed: controller.togglePasswordVisibility,
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(8),
+                            borderSide: const BorderSide(color: AppColors.border),
+                          ),
+                          enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(8),
+                            borderSide: const BorderSide(color: AppColors.border),
+                          ),
+                          suffixIcon: IconButton(
+                            icon: Icon(
+                              controller.isPasswordVisible.value
+                                  ? Icons.visibility_off
+                                  : Icons.visibility,
+                              color: AppColors.textSecondary,
+                            ),
+                            onPressed: controller.togglePasswordVisibility,
+                          ),
                         ),
                       ),
-                    )),
+                    ),
                     const SizedBox(height: 40),
 
                     // Login Button
-                    Obx(() => ElevatedButton(
-                      onPressed: controller.isLoading.value
-                          ? null
-                          : controller.login,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.primary, // Green
-                        foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(vertical: 16),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8),
+                    Obx(
+                      () => ElevatedButton(
+                        onPressed: controller.isLoading.value
+                            ? null
+                            : controller.login,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColors.primary,
+                          foregroundColor: AppColors.textWhite,
+                          padding: const EdgeInsets.symmetric(vertical: 16),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          elevation: 0,
                         ),
-                        elevation: 0,
+                        child: controller.isLoading.value
+                            ? const SizedBox(
+                                height: 24,
+                                width: 24,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  color: AppColors.textWhite,
+                                ),
+                              )
+                            : const Text(
+                                'Login',
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
                       ),
-                      child: controller.isLoading.value
-                          ? const SizedBox(
-                              height: 24,
-                              width: 24,
-                              child: CircularProgressIndicator(
-                                strokeWidth: 2,
-                                color: Colors.white,
-                              ),
-                            )
-                          : const Text(
-                              'Login',
-                              style: TextStyle(
-                                fontSize: 16, 
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                    )),
+                    ),
                   ],
                 ),
               ),
             ),
-            
-            // Footer
-            Container(
-              padding: const EdgeInsets.all(16),
-              color: Colors.grey[300], // Light gray background for footer
-              width: double.infinity,
-              alignment: Alignment.center,
-              child: const Text(
-                '@2026 Perhutani Padangan',
-                style: TextStyle(
-                  color: Colors.black87,
-                  fontSize: 12,
-                ),
-              ),
-            ),
+
+            // App Footer
+            const AppFooter(),
           ],
         ),
       ),

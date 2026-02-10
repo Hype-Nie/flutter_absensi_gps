@@ -9,7 +9,7 @@ class EmployeeFormView extends GetView<EmployeeFormController> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.grey[100],
+      backgroundColor: AppColors.grey100,
       body: SafeArea(
         child: Column(
           children: [
@@ -44,27 +44,31 @@ class EmployeeFormView extends GetView<EmployeeFormController> {
             child: Container(
               padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha: 0.2),
+                color: AppColors.textWhite.withValues(alpha: 0.2),
                 borderRadius: BorderRadius.circular(12),
               ),
               child: const Icon(
                 Icons.arrow_back_ios_new,
-                color: Colors.white,
+                color: AppColors.textWhite,
                 size: 20,
               ),
             ),
           ),
           const SizedBox(width: 16),
-          Obx(() => Expanded(
-                child: Text(
-                  controller.isEditMode.value ? 'Edit Karyawan' : 'Tambah Karyawan',
-                  style: const TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
-                  ),
+          Obx(
+            () => Expanded(
+              child: Text(
+                controller.isEditMode.value
+                    ? 'Edit Karyawan'
+                    : 'Tambah Karyawan',
+                style: const TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                  color: AppColors.textWhite,
                 ),
-              )),
+              ),
+            ),
+          ),
         ],
       ),
     );
@@ -74,11 +78,11 @@ class EmployeeFormView extends GetView<EmployeeFormController> {
     return Container(
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppColors.surface,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
+            color: AppColors.shadow.withValues(alpha: 0.05),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -104,57 +108,70 @@ class EmployeeFormView extends GetView<EmployeeFormController> {
               icon: Icons.badge_outlined,
               validator: controller.validateNPK,
             ),
-            const SizedBox(height: 20),
-            Obx(() => _buildPasswordField(
-                  controller: controller.passwordController,
-                  label: controller.isEditMode.value
-                      ? 'Password Baru (Opsional)'
-                      : 'Password',
-                  hint: 'Masukkan password',
-                  showPassword: controller.showPassword.value,
-                  onToggle: controller.togglePasswordVisibility,
-                  validator: controller.validatePassword,
-                )),
-            const SizedBox(height: 20),
-            Obx(() => _buildPasswordField(
-                  controller: controller.confirmPasswordController,
-                  label: 'Konfirmasi Password',
-                  hint: 'Masukkan konfirmasi password',
-                  showPassword: controller.showConfirmPassword.value,
-                  onToggle: controller.toggleConfirmPasswordVisibility,
-                  validator: controller.validateConfirmPassword,
-                )),
-            const SizedBox(height: 32),
-            Obx(() => ElevatedButton(
-                  onPressed: controller.isLoading.value
-                      ? null
-                      : controller.saveEmployee,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.primary,
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    disabledBackgroundColor: AppColors.primary.withValues(alpha: 0.6),
-                  ),
-                  child: controller.isLoading.value
-                      ? const SizedBox(
-                          width: 24,
-                          height: 24,
-                          child: CircularProgressIndicator(
-                            color: Colors.white,
-                            strokeWidth: 2,
-                          ),
-                        )
-                      : Text(
-                          controller.isEditMode.value ? 'Simpan Perubahan' : 'Tambah Karyawan',
-                          style: const TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w600,
-                          ),
+            // Only show password fields in create mode
+            Obx(
+              () => controller.isEditMode.value
+                  ? const SizedBox(height: 32)
+                  : Column(
+                      children: [
+                        const SizedBox(height: 20),
+                        _buildPasswordField(
+                          controller: controller.passwordController,
+                          label: 'Password',
+                          hint: 'Masukkan password',
+                          showPassword: controller.showPassword.value,
+                          onToggle: controller.togglePasswordVisibility,
+                          validator: controller.validatePassword,
                         ),
-                )),
+                        const SizedBox(height: 20),
+                        _buildPasswordField(
+                          controller: controller.confirmPasswordController,
+                          label: 'Konfirmasi Password',
+                          hint: 'Masukkan konfirmasi password',
+                          showPassword: controller.showConfirmPassword.value,
+                          onToggle: controller.toggleConfirmPasswordVisibility,
+                          validator: controller.validateConfirmPassword,
+                        ),
+                        const SizedBox(height: 32),
+                      ],
+                    ),
+            ),
+            Obx(
+              () => ElevatedButton(
+                onPressed: controller.isLoading.value
+                    ? null
+                    : controller.saveEmployee,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.primary,
+                  foregroundColor: AppColors.textWhite,
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  disabledBackgroundColor: AppColors.primary.withValues(
+                    alpha: 0.6,
+                  ),
+                ),
+                child: controller.isLoading.value
+                    ? const SizedBox(
+                        width: 24,
+                        height: 24,
+                        child: CircularProgressIndicator(
+                          color: AppColors.textWhite,
+                          strokeWidth: 2,
+                        ),
+                      )
+                    : Text(
+                        controller.isEditMode.value
+                            ? 'Simpan Perubahan'
+                            : 'Tambah Karyawan',
+                        style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+              ),
+            ),
           ],
         ),
       ),
@@ -176,7 +193,7 @@ class EmployeeFormView extends GetView<EmployeeFormController> {
           style: TextStyle(
             fontSize: 14,
             fontWeight: FontWeight.w600,
-            color: Colors.grey[700],
+            color: AppColors.grey700,
           ),
         ),
         const SizedBox(height: 8),
@@ -185,17 +202,17 @@ class EmployeeFormView extends GetView<EmployeeFormController> {
           validator: validator,
           decoration: InputDecoration(
             hintText: hint,
-            hintStyle: TextStyle(color: Colors.grey[400]),
-            prefixIcon: Icon(icon, color: Colors.grey[500]),
+            hintStyle: const TextStyle(color: AppColors.grey400),
+            prefixIcon: Icon(icon, color: AppColors.grey500),
             filled: true,
-            fillColor: Colors.grey[50],
+            fillColor: AppColors.grey50,
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
-              borderSide: BorderSide(color: Colors.grey[300]!),
+              borderSide: const BorderSide(color: AppColors.grey300),
             ),
             enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
-              borderSide: BorderSide(color: Colors.grey[300]!),
+              borderSide: const BorderSide(color: AppColors.grey300),
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
@@ -203,7 +220,7 @@ class EmployeeFormView extends GetView<EmployeeFormController> {
             ),
             errorBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
-              borderSide: const BorderSide(color: Colors.red),
+              borderSide: const BorderSide(color: AppColors.error),
             ),
             contentPadding: const EdgeInsets.symmetric(
               horizontal: 16,
@@ -231,7 +248,7 @@ class EmployeeFormView extends GetView<EmployeeFormController> {
           style: TextStyle(
             fontSize: 14,
             fontWeight: FontWeight.w600,
-            color: Colors.grey[700],
+            color: AppColors.grey700,
           ),
         ),
         const SizedBox(height: 8),
@@ -241,24 +258,24 @@ class EmployeeFormView extends GetView<EmployeeFormController> {
           validator: validator,
           decoration: InputDecoration(
             hintText: hint,
-            hintStyle: TextStyle(color: Colors.grey[400]),
-            prefixIcon: Icon(Icons.lock_outline, color: Colors.grey[500]),
+            hintStyle: const TextStyle(color: AppColors.grey400),
+            prefixIcon: Icon(Icons.lock_outline, color: AppColors.grey500),
             suffixIcon: IconButton(
               icon: Icon(
                 showPassword ? Icons.visibility : Icons.visibility_off,
-                color: Colors.grey[500],
+                color: AppColors.grey500,
               ),
               onPressed: onToggle,
             ),
             filled: true,
-            fillColor: Colors.grey[50],
+            fillColor: AppColors.grey50,
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
-              borderSide: BorderSide(color: Colors.grey[300]!),
+              borderSide: const BorderSide(color: AppColors.grey300),
             ),
             enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
-              borderSide: BorderSide(color: Colors.grey[300]!),
+              borderSide: const BorderSide(color: AppColors.grey300),
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
@@ -266,7 +283,7 @@ class EmployeeFormView extends GetView<EmployeeFormController> {
             ),
             errorBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
-              borderSide: const BorderSide(color: Colors.red),
+              borderSide: const BorderSide(color: AppColors.error),
             ),
             contentPadding: const EdgeInsets.symmetric(
               horizontal: 16,

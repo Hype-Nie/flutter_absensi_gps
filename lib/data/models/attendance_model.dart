@@ -82,8 +82,9 @@ class AttendanceModel {
   bool get hasCheckedOut => checkOutTime != null;
 
   Duration? get workDuration {
-    if (checkOutTime == null) return null;
-    return checkOutTime!.difference(checkInTime);
+    final checkout = checkOutTime;
+    if (checkout == null) return null;
+    return checkout.difference(checkInTime);
   }
 
   String get workDurationFormatted {

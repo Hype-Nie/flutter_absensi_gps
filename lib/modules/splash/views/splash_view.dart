@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
 import '../../../core/constants/app_colors.dart';
 import '../controllers/splash_controller.dart';
@@ -14,22 +15,29 @@ class SplashView extends GetView<SplashController> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            // Logo or App Icon
-            Container(
-              width: 120,
-              height: 120,
-              decoration: BoxDecoration(
-                color: AppColors.textWhite,
-                borderRadius: BorderRadius.circular(20),
-              ),
-              child: const Icon(
-                Icons.fingerprint,
-                size: 80,
-                color: AppColors.primary,
+            // Perhutani Logo
+            SizedBox(
+              width: 150,
+              height: 150,
+              child: SvgPicture.asset(
+                'assets/images/Perhutani_logo.svg',
+                placeholderBuilder: (context) => Container(
+                  width: 120,
+                  height: 120,
+                  decoration: BoxDecoration(
+                    color: AppColors.textWhite,
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: const Icon(
+                    Icons.fingerprint,
+                    size: 80,
+                    color: AppColors.primary,
+                  ),
+                ),
               ),
             ),
-            const SizedBox(height: 24),
-            
+            const SizedBox(height: 32),
+
             // App Name
             const Text(
               'Absensi GPS',
@@ -40,7 +48,7 @@ class SplashView extends GetView<SplashController> {
               ),
             ),
             const SizedBox(height: 8),
-            
+
             const Text(
               'Sistem Absensi Karyawan',
               style: TextStyle(
@@ -49,7 +57,7 @@ class SplashView extends GetView<SplashController> {
               ),
             ),
             const SizedBox(height: 48),
-            
+
             // Loading Indicator
             const CircularProgressIndicator(
               color: AppColors.textWhite,

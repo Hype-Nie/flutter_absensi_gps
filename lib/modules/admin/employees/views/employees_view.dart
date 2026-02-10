@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../../../core/constants/app_colors.dart';
+import '../../../../data/models/employee_model.dart';
 import '../controllers/employees_controller.dart';
 
 class EmployeesView extends GetView<EmployeesController> {
@@ -9,22 +10,31 @@ class EmployeesView extends GetView<EmployeesController> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.grey[100],
+      backgroundColor: AppColors.grey100,
       body: SafeArea(
         child: Column(
           children: [
             _buildHeader(),
             Expanded(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.all(16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    _buildSearchBar(),
-                    const SizedBox(height: 16),
-                    _buildEmployeeList(),
-                  ],
-                ),
+              child: Obx(
+                () => controller.isLoading.value
+                    ? _buildLoadingState()
+                    : RefreshIndicator(
+                        onRefresh: () => controller.refreshData(),
+                        color: AppColors.primary,
+                        child: SingleChildScrollView(
+                          physics: const AlwaysScrollableScrollPhysics(),
+                          padding: const EdgeInsets.all(16),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              _buildSearchBar(),
+                              const SizedBox(height: 16),
+                              _buildEmployeeList(),
+                            ],
+                          ),
+                        ),
+                      ),
               ),
             ),
           ],
@@ -33,10 +43,13 @@ class EmployeesView extends GetView<EmployeesController> {
       floatingActionButton: FloatingActionButton.extended(
         onPressed: controller.goToAddEmployee,
         backgroundColor: AppColors.primary,
-        icon: const Icon(Icons.add, color: Colors.white),
+        icon: const Icon(Icons.add, color: AppColors.textWhite),
         label: const Text(
           'Tambah Karyawan',
-          style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600),
+          style: TextStyle(
+            color: AppColors.textWhite,
+            fontWeight: FontWeight.w600,
+          ),
         ),
       ),
     );
@@ -60,12 +73,12 @@ class EmployeesView extends GetView<EmployeesController> {
             child: Container(
               padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha: 0.2),
+                color: AppColors.textWhite.withValues(alpha: 0.2),
                 borderRadius: BorderRadius.circular(12),
               ),
               child: const Icon(
                 Icons.arrow_back_ios_new,
-                color: Colors.white,
+                color: AppColors.textWhite,
                 size: 20,
               ),
             ),
@@ -77,7 +90,7 @@ class EmployeesView extends GetView<EmployeesController> {
               style: TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.bold,
-                color: Colors.white,
+                color: AppColors.textWhite,
               ),
             ),
           ),
@@ -89,11 +102,11 @@ class EmployeesView extends GetView<EmployeesController> {
   Widget _buildSearchBar() {
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppColors.surface,
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
+            color: AppColors.shadow.withValues(alpha: 0.05),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -103,8 +116,8 @@ class EmployeesView extends GetView<EmployeesController> {
         onChanged: controller.onSearch,
         decoration: InputDecoration(
           hintText: 'Cari berdasarkan nama atau NPK...',
-          hintStyle: TextStyle(color: Colors.grey[400], fontSize: 14),
-          prefixIcon: Icon(Icons.search, color: Colors.grey[400]),
+          hintStyle: const TextStyle(color: AppColors.grey400, fontSize: 14),
+          prefixIcon: const Icon(Icons.search, color: AppColors.grey400),
           border: InputBorder.none,
           contentPadding: const EdgeInsets.symmetric(
             horizontal: 16,
@@ -118,18 +131,18 @@ class EmployeesView extends GetView<EmployeesController> {
   Widget _buildEmployeeList() {
     return Obx(() {
       final employees = controller.filteredEmployees;
-      
+
       if (employees.isEmpty) {
         return Center(
           child: Padding(
             padding: const EdgeInsets.all(32),
             child: Column(
               children: [
-                Icon(Icons.people_outline, size: 64, color: Colors.grey[400]),
+                Icon(Icons.people_outline, size: 64, color: AppColors.grey400),
                 const SizedBox(height: 16),
                 Text(
                   'Tidak ada karyawan ditemukan',
-                  style: TextStyle(color: Colors.grey[600]),
+                  style: const TextStyle(color: AppColors.grey600),
                 ),
               ],
             ),
@@ -143,16 +156,16 @@ class EmployeesView extends GetView<EmployeesController> {
     });
   }
 
-  Widget _buildEmployeeItem(Map<String, dynamic> employee) {
+  Widget _buildEmployeeItem(EmployeeModel employee) {
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppColors.surface,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
+            color: AppColors.shadow.withValues(alpha: 0.05),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -179,7 +192,7 @@ class EmployeesView extends GetView<EmployeesController> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  employee['name'] ?? '-',
+                  employee.name,
                   style: const TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w600,
@@ -194,24 +207,28 @@ class EmployeesView extends GetView<EmployeesController> {
                         vertical: 2,
                       ),
                       decoration: BoxDecoration(
-                        color: Colors.grey[200],
+                        color: AppColors.grey200,
                         borderRadius: BorderRadius.circular(4),
                       ),
                       child: Text(
-                        employee['npk'] ?? '-',
-                        style: TextStyle(
+                        employee.npk,
+                        style: const TextStyle(
                           fontSize: 12,
-                          color: Colors.grey[700],
+                          color: AppColors.grey700,
                           fontWeight: FontWeight.w500,
                         ),
                       ),
                     ),
                     const SizedBox(width: 8),
-                    Text(
-                      employee['position'] ?? '-',
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: Colors.grey[500],
+                    Expanded(
+                      child: Text(
+                        employee.displayPosition,
+                        style: const TextStyle(
+                          fontSize: 12,
+                          color: AppColors.grey600,
+                          fontWeight: FontWeight.w500,
+                        ),
+                        overflow: TextOverflow.ellipsis,
                       ),
                     ),
                   ],
@@ -223,7 +240,7 @@ class EmployeesView extends GetView<EmployeesController> {
             onPressed: () => controller.goToEmployeeDetail(employee),
             style: ElevatedButton.styleFrom(
               backgroundColor: AppColors.primary,
-              foregroundColor: Colors.white,
+              foregroundColor: AppColors.textWhite,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(8),
               ),
@@ -236,6 +253,12 @@ class EmployeesView extends GetView<EmployeesController> {
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildLoadingState() {
+    return const Center(
+      child: CircularProgressIndicator(color: AppColors.primary),
     );
   }
 }

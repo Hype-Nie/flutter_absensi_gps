@@ -9,6 +9,7 @@ class StorageService {
 
   // Keys
   static const String keyToken = 'token';
+  static const String keyUserId = 'user_id';
   static const String keyUser = 'user';
   static const String keyIsLoggedIn = 'is_logged_in';
   static const String keyRememberMe = 'remember_me';
@@ -24,6 +25,19 @@ class StorageService {
 
   Future<void> removeToken() async {
     await _storage.remove(keyToken);
+  }
+
+  // User ID
+  Future<void> saveUserId(String userId) async {
+    await _storage.write(keyUserId, userId);
+  }
+
+  String? getUserId() {
+    return _storage.read(keyUserId);
+  }
+
+  Future<void> removeUserId() async {
+    await _storage.remove(keyUserId);
   }
 
   // User Data

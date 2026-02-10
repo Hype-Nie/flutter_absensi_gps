@@ -2,18 +2,18 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../../../core/constants/app_strings.dart';
 import '../../../../core/utils/helpers.dart';
-import '../../../../data/services/storage_service.dart';
+import '../../../../data/services/auth_service.dart';
 import '../../../../routes/app_routes.dart';
+import '../../../../core/constants/app_colors.dart';
 
 class LoginController extends GetxController {
-  final StorageService _storageService = Get.find();
+  final AuthService _authService = Get.find<AuthService>();
 
   final npkController = TextEditingController();
   final passwordController = TextEditingController();
 
   final isLoading = false.obs;
   final isPasswordVisible = false.obs;
-  final selectedRole = 'employee'.obs;
 
   @override
   void onClose() {
@@ -26,16 +26,6 @@ class LoginController extends GetxController {
     isPasswordVisible.value = !isPasswordVisible.value;
   }
 
-  void selectRole(String role) {
-    selectedRole.value = role;
-    Get.snackbar(
-      'Role Selected',
-      'Login sebagai ${role == 'admin' ? 'Admin' : 'Karyawan'}',
-      snackPosition: SnackPosition.BOTTOM,
-      duration: const Duration(seconds: 1),
-    );
-  }
-
   Future<void> login() async {
     // Validate inputs
     if (!_validateInputs()) return;
@@ -43,44 +33,43 @@ class LoginController extends GetxController {
     isLoading.value = true;
 
     try {
-      // TODO: Replace with actual API call
-      await Future.delayed(const Duration(seconds: 2));
-
-      // Mock login success
-      final userData = {
-        'id': '1',
-        'name': selectedRole.value == 'admin' ? 'Admin User' : 'Employee User',
-        'npk': npkController.text,
-        'role': selectedRole.value,
-      };
-
-      // Save to storage
-      await _storageService.saveUser(userData);
-      await _storageService.saveToken('mock_token_123456');
-      await _storageService.setLoggedIn(true);
+      // Call AuthService login
+      final user = await _authService.login(
+        npkController.text.trim(),
+        passwordController.text,
+      );
 
       // Show success message
       Get.snackbar(
         'Success',
         AppStrings.successLogin,
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.green,
-        colorText: Colors.white,
+        snackPosition: SnackPosition.TOP,
+        backgroundColor: AppColors.success,
+        colorText: AppColors.textWhite,
+        duration: const Duration(seconds: 2),
       );
 
-      // Navigate based on role
-      if (selectedRole.value == 'admin') {
+      // Navigate based on role from API response
+      if (user.isAdmin) {
         Get.offAllNamed(AppRoutes.adminDashboard);
+      } else if (user.isKaryawan) {
+        Get.offAllNamed(AppRoutes.employeeDashboard);
       } else {
+        // Unknown role, default to employee dashboard
         Get.offAllNamed(AppRoutes.employeeDashboard);
       }
     } catch (e) {
+      // Show error message
+      final errorMessage = e is Exception
+          ? e.toString().replaceFirst('Exception: ', '')
+          : AppStrings.errorGeneral;
       Get.snackbar(
-        'Error',
-        AppStrings.errorGeneral,
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.red,
-        colorText: Colors.white,
+        'Login Gagal',
+        errorMessage,
+        snackPosition: SnackPosition.TOP,
+        backgroundColor: AppColors.error,
+        colorText: AppColors.textWhite,
+        duration: const Duration(seconds: 3),
       );
     } finally {
       isLoading.value = false;
@@ -88,11 +77,13 @@ class LoginController extends GetxController {
   }
 
   bool _validateInputs() {
-    if (npkController.text.isEmpty) {
+    if (npkController.text.trim().isEmpty) {
       Get.snackbar(
         'Error',
         'NPK wajib diisi',
-        snackPosition: SnackPosition.BOTTOM,
+        snackPosition: SnackPosition.TOP,
+        backgroundColor: AppColors.error,
+        colorText: AppColors.textWhite,
       );
       return false;
     }
@@ -101,7 +92,9 @@ class LoginController extends GetxController {
       Get.snackbar(
         'Error',
         'Password ${AppStrings.errorFieldRequired.toLowerCase()}',
-        snackPosition: SnackPosition.BOTTOM,
+        snackPosition: SnackPosition.TOP,
+        backgroundColor: AppColors.error,
+        colorText: AppColors.textWhite,
       );
       return false;
     }
@@ -110,7 +103,9 @@ class LoginController extends GetxController {
       Get.snackbar(
         'Error',
         AppStrings.errorPasswordTooShort,
-        snackPosition: SnackPosition.BOTTOM,
+        snackPosition: SnackPosition.TOP,
+        backgroundColor: AppColors.error,
+        colorText: AppColors.textWhite,
       );
       return false;
     }

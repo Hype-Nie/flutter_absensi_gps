@@ -1,11 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import '../../../../core/constants/app_colors.dart';
+import '../../../../data/models/employee_model.dart';
+import '../../../../data/services/employee_service.dart';
 import '../../../../routes/app_routes.dart';
 
+/// Controller for dedicated employees list page
+/// Uses EmployeeService for business logic
 class EmployeesController extends GetxController {
+  final EmployeeService _employeeService = Get.find<EmployeeService>();
+
   final searchQuery = ''.obs;
-  final employees = <Map<String, dynamic>>[].obs;
-  final isLoading = false.obs;
+
+  // Forward to service state
+  RxBool get isLoading => _employeeService.isLoading;
+  RxList<EmployeeModel> get employees => _employeeService.employees;
 
   @override
   void onInit() {
@@ -13,58 +22,30 @@ class EmployeesController extends GetxController {
     _loadEmployees();
   }
 
-  void _loadEmployees() {
-    // Mock data - replace with API
-    employees.value = [
-      {
-        'id': '1',
-        'name': 'Karyawan1',
-        'npk': 'NPK001',
-        'position': 'Staff',
-        'department': 'IT',
-      },
-      {
-        'id': '2',
-        'name': 'Karyawan2',
-        'npk': 'NPK002',
-        'position': 'Manager',
-        'department': 'HR',
-      },
-      {
-        'id': '3',
-        'name': 'Karyawan3',
-        'npk': 'NPK003',
-        'position': 'Staff',
-        'department': 'Finance',
-      },
-      {
-        'id': '4',
-        'name': 'Karyawan4',
-        'npk': 'NPK004',
-        'position': 'Staff',
-        'department': 'Marketing',
-      },
-    ];
+  Future<void> _loadEmployees({bool refresh = false}) async {
+    if (refresh) {
+      final result = await _employeeService.refreshEmployees();
+      if (!result.isSuccess) {
+        _showErrorSnackbar('Gagal memuat data karyawan', result.error);
+      }
+    } else {
+      final result = await _employeeService.fetchAllEmployees();
+      if (!result.isSuccess) {
+        _showErrorSnackbar('Gagal memuat data karyawan', result.error);
+      }
+    }
   }
 
-  List<Map<String, dynamic>> get filteredEmployees {
-    if (searchQuery.value.isEmpty) {
-      return employees;
-    }
-    return employees.where((emp) {
-      final name = emp['name']?.toString().toLowerCase() ?? '';
-      final npk = emp['npk']?.toString().toLowerCase() ?? '';
-      final query = searchQuery.value.toLowerCase();
-      return name.contains(query) || npk.contains(query);
-    }).toList();
+  List<EmployeeModel> get filteredEmployees {
+    return _employeeService.searchEmployees(searchQuery.value);
   }
 
   void onSearch(String query) {
     searchQuery.value = query;
   }
 
-  void goToEmployeeDetail(Map<String, dynamic> employee) {
-    Get.toNamed(AppRoutes.adminEmployeeDetail, arguments: employee);
+  void goToEmployeeDetail(EmployeeModel employee) {
+    Get.toNamed(AppRoutes.adminEmployeeDetail, arguments: employee.toJson());
   }
 
   void goToAddEmployee() {
@@ -78,26 +59,54 @@ class EmployeesController extends GetxController {
         title: const Text('Konfirmasi'),
         content: const Text('Apakah Anda yakin ingin menghapus karyawan ini?'),
         actions: [
+          TextButton(onPressed: () => Get.back(), child: const Text('Batal')),
           TextButton(
-            onPressed: () => Get.back(),
-            child: const Text('Batal'),
-          ),
-          TextButton(
-            onPressed: () {
-              employees.removeWhere((emp) => emp['id'] == id);
-              Get.back();
-              Get.snackbar(
-                'Berhasil',
-                'Karyawan berhasil dihapus',
-                backgroundColor: Colors.green,
-                colorText: Colors.white,
-                snackPosition: SnackPosition.TOP,
-              );
-            },
-            child: const Text('Hapus', style: TextStyle(color: Colors.red)),
+            onPressed: () => _performDelete(id),
+            child: const Text(
+              'Hapus',
+              style: TextStyle(color: AppColors.error),
+            ),
           ),
         ],
       ),
+    );
+  }
+
+  Future<void> _performDelete(String id) async {
+    final result = await _employeeService.deleteEmployee(id);
+
+    Get.back(); // Close dialog
+
+    if (result.isSuccess) {
+      Get.snackbar(
+        'Berhasil',
+        'Karyawan berhasil dihapus',
+        backgroundColor: AppColors.success,
+        colorText: AppColors.textWhite,
+        snackPosition: SnackPosition.TOP,
+      );
+    } else {
+      Get.snackbar(
+        'Gagal',
+        result.error ?? 'Gagal menghapus karyawan',
+        backgroundColor: AppColors.error,
+        colorText: AppColors.textWhite,
+        snackPosition: SnackPosition.TOP,
+      );
+    }
+  }
+
+  Future<void> refreshData() async {
+    await _loadEmployees(refresh: true);
+  }
+
+  void _showErrorSnackbar(String title, String? detail) {
+    Get.snackbar(
+      title,
+      detail ?? 'Terjadi kesalahan',
+      backgroundColor: AppColors.error,
+      colorText: AppColors.textWhite,
+      snackPosition: SnackPosition.TOP,
     );
   }
 
