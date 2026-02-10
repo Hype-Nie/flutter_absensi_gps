@@ -124,4 +124,30 @@ class ApiProvider {
       rethrow;
     }
   }
+
+  // Download file (Excel/PDF)
+  Future<Response> download(
+    String path, {
+    Map<String, dynamic>? queryParameters,
+    ProgressCallback? onReceiveProgress,
+  }) async {
+    try {
+      final options = Options(
+        responseType: ResponseType.bytes,
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': '*/*',
+        },
+      );
+
+      return await _dio.get(
+        path,
+        queryParameters: queryParameters,
+        options: options,
+        onReceiveProgress: onReceiveProgress,
+      );
+    } catch (e) {
+      rethrow;
+    }
+  }
 }

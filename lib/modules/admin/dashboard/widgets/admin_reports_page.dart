@@ -183,107 +183,168 @@ class AdminReportsPage extends StatelessWidget {
 
   Widget _buildReportTable(AdminDashboardController controller) {
     return Obx(
-      () => Container(
-        decoration: BoxDecoration(
-          color: AppColors.surface,
-          borderRadius: BorderRadius.circular(12),
-          boxShadow: [
-            BoxShadow(
-              color: AppColors.shadow.withValues(alpha: 0.05),
-              blurRadius: 10,
-              offset: const Offset(0, 4),
-            ),
-          ],
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Padding(
-              padding: const EdgeInsets.all(16),
-              child: Text(
-                'Detail Absensi Karyawan',
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
-                  color: AppColors.grey800,
+      () {
+        final reportData = controller.reports;
+
+        if (reportData.isEmpty) {
+          return _buildEmptyReportState();
+        }
+
+        return Container(
+          decoration: BoxDecoration(
+            color: AppColors.surface,
+            borderRadius: BorderRadius.circular(12),
+            boxShadow: [
+              BoxShadow(
+                color: AppColors.shadow.withValues(alpha: 0.05),
+                blurRadius: 10,
+                offset: const Offset(0, 4),
+              ),
+            ],
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Padding(
+                padding: const EdgeInsets.all(16),
+                child: Text(
+                  'Detail Absensi Karyawan',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                    color: AppColors.grey800,
+                  ),
                 ),
               ),
-            ),
-            SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              child: DataTable(
-                headingRowColor: WidgetStateProperty.all(AppColors.grey100),
-                columns: const [
-                  DataColumn(
-                    label: Text(
-                      'Nama',
-                      style: TextStyle(fontWeight: FontWeight.bold),
+              SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child: DataTable(
+                  headingRowColor: WidgetStateProperty.all(AppColors.grey100),
+                  columns: const [
+                    DataColumn(
+                      label: Text(
+                        'Nama',
+                        style: TextStyle(fontWeight: FontWeight.bold),
+                      ),
                     ),
-                  ),
-                  DataColumn(
-                    label: Text(
-                      'NPK',
-                      style: TextStyle(fontWeight: FontWeight.bold),
+                    DataColumn(
+                      label: Text(
+                        'NPK',
+                        style: TextStyle(fontWeight: FontWeight.bold),
+                      ),
                     ),
-                  ),
-                  DataColumn(
-                    label: Text(
-                      'Hadir',
-                      style: TextStyle(fontWeight: FontWeight.bold),
+                    DataColumn(
+                      label: Text(
+                        'Hadir',
+                        style: TextStyle(fontWeight: FontWeight.bold),
+                      ),
                     ),
-                  ),
-                  DataColumn(
-                    label: Text(
-                      'Izin',
-                      style: TextStyle(fontWeight: FontWeight.bold),
+                    DataColumn(
+                      label: Text(
+                        'Izin',
+                        style: TextStyle(fontWeight: FontWeight.bold),
+                      ),
                     ),
-                  ),
-                  DataColumn(
-                    label: Text(
-                      'Sakit',
-                      style: TextStyle(fontWeight: FontWeight.bold),
+                    DataColumn(
+                      label: Text(
+                        'Sakit',
+                        style: TextStyle(fontWeight: FontWeight.bold),
+                      ),
                     ),
-                  ),
-                ],
-                rows: controller.reports.map((report) {
-                  return DataRow(
-                    cells: [
-                      DataCell(Text(report.name)),
-                      DataCell(Text(report.npk)),
-                      DataCell(
-                        Text(
-                          report.hadir.toString(),
-                          style: const TextStyle(
-                            color: AppColors.success,
-                            fontWeight: FontWeight.w600,
+                  ],
+                  rows: reportData.map((report) {
+                    return DataRow(
+                      cells: [
+                        DataCell(Text(report.name)),
+                        DataCell(Text(report.npk)),
+                        DataCell(
+                          Text(
+                            report.hadir.toString(),
+                            style: const TextStyle(
+                              color: AppColors.success,
+                              fontWeight: FontWeight.w600,
+                            ),
                           ),
                         ),
-                      ),
-                      DataCell(
-                        Text(
-                          report.izin.toString(),
-                          style: const TextStyle(
-                            color: AppColors.orange,
-                            fontWeight: FontWeight.w600,
+                        DataCell(
+                          Text(
+                            report.izin.toString(),
+                            style: const TextStyle(
+                              color: AppColors.orange,
+                              fontWeight: FontWeight.w600,
+                            ),
                           ),
                         ),
-                      ),
-                      DataCell(
-                        Text(
-                          report.sakit.toString(),
-                          style: const TextStyle(
-                            color: AppColors.error,
-                            fontWeight: FontWeight.w600,
+                        DataCell(
+                          Text(
+                            report.sakit.toString(),
+                            style: const TextStyle(
+                              color: AppColors.error,
+                              fontWeight: FontWeight.w600,
+                            ),
                           ),
                         ),
-                      ),
-                    ],
-                  );
-                }).toList(),
+                      ],
+                    );
+                  }).toList(),
+                ),
               ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildEmptyReportState() {
+    return Container(
+      padding: const EdgeInsets.all(48),
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.shadow.withValues(alpha: 0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              color: AppColors.primary.withValues(alpha: 0.1),
+              shape: BoxShape.circle,
             ),
-          ],
-        ),
+            child: const Icon(
+              Icons.assessment_outlined,
+              size: 48,
+              color: AppColors.primary,
+            ),
+          ),
+          const SizedBox(height: 16),
+          Text(
+            'Belum Ada Data Laporan',
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.w600,
+              color: AppColors.grey800,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Obx(
+            () => Text(
+              'Data laporan untuk ${Get.find<AdminDashboardController>().monthYearText} belum tersedia.',
+              style: const TextStyle(
+                fontSize: 14,
+                color: AppColors.grey500,
+              ),
+              textAlign: TextAlign.center,
+            ),
+          ),
+        ],
       ),
     );
   }

@@ -48,6 +48,16 @@ class AdminDashboardPage extends StatelessWidget {
         const SizedBox(width: 12),
         Expanded(
           child: DashboardStatCard(
+            icon: Icons.access_time,
+            title: 'Terlambat',
+            value: controller.totalTerlambat,
+            color: AppColors.warning,
+            bgColor: AppColors.warning.withValues(alpha: 0.1),
+          ),
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: DashboardStatCard(
             icon: Icons.event_note_outlined,
             title: 'Total Ijin',
             value: controller.totalIzin,
@@ -115,6 +125,10 @@ class AdminDashboardPage extends StatelessWidget {
       () {
         final displayList = controller.displayList;
 
+        if (displayList.isEmpty) {
+          return _buildEmptyState();
+        }
+
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -133,6 +147,57 @@ class AdminDashboardPage extends StatelessWidget {
         ],
       );
     },
+    );
+  }
+
+  Widget _buildEmptyState() {
+    return Container(
+      padding: const EdgeInsets.all(48),
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.shadow.withValues(alpha: 0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              color: AppColors.primary.withValues(alpha: 0.1),
+              shape: BoxShape.circle,
+            ),
+            child: const Icon(
+              Icons.event_busy_outlined,
+              size: 48,
+              color: AppColors.primary,
+            ),
+          ),
+          const SizedBox(height: 16),
+          const Text(
+            'Belum Ada Data Absensi',
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.w600,
+              color: AppColors.grey800,
+            ),
+          ),
+          const SizedBox(height: 8),
+          const Text(
+            'Data absensi untuk hari ini belum tersedia.\nSilakan coba lagi nanti atau ubah filter pencarian.',
+            style: TextStyle(
+              fontSize: 14,
+              color: AppColors.grey500,
+            ),
+            textAlign: TextAlign.center,
+          ),
+        ],
+      ),
     );
   }
 }

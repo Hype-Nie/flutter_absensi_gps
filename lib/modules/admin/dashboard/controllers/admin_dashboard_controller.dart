@@ -75,13 +75,25 @@ class AdminDashboardController extends GetxController
       if (result.isSuccess && result.data != null) {
         final attendances = result.data!;
 
-        // Calculate totals
-        totalHadir.value = attendances.where((a) => a.status.toLowerCase() == 'hadir').length;
-        totalIzin.value = attendances.where((a) => a.status.toLowerCase() == 'izin').length;
-        totalSakit.value = attendances.where((a) => a.status.toLowerCase() == 'sakit').length;
-        totalTerlambat.value = attendances.where((a) => a.status.toLowerCase() == 'terlambat').length;
+        // Debug: log semua status untuk diagnosis
+        for (var a in attendances) {
+          AppLogger.info('Attendance: ${a.user?.name} - status: "${a.status}" (lowercase: "${a.status.toLowerCase()}")');
+        }
 
-        // Build attendance list for display
+        // Calculate totals dari SEMUA data absensi hari ini
+        totalHadir.value = attendances.where((a) => _isStatus(a.status, 'hadir')).length;
+        totalIzin.value = attendances.where((a) {
+          final match = _isStatus(a.status, 'izin') || _isStatus(a.status, 'ijin');
+          if (!match && a.status.toLowerCase().contains('i')) {
+            // Log status yang mengandung 'i' tapi tidak match
+            AppLogger.warning('Status with "i" but not matched: "${a.status}" for ${a.user?.name}');
+          }
+          return match;
+        }).length;
+        totalSakit.value = attendances.where((a) => _isStatus(a.status, 'sakit')).length;
+        totalTerlambat.value = attendances.where((a) => _isStatus(a.status, 'terlambat')).length;
+
+        // Build attendance list untuk display - SEMUA data tanpa batasan
         attendanceList.value = attendances.map((a) {
           return DashboardAttendanceModel(
             name: a.user?.name ?? 'Unknown',
@@ -97,7 +109,7 @@ class AdminDashboardController extends GetxController
         // Sync filtered list
         filteredAttendanceList.value = displayList;
 
-        AppLogger.info('AdminDashboard: Loaded ${attendances.length} attendance records');
+        AppLogger.info('AdminDashboard: Loaded ${attendances.length} attendance records for today');
       } else {
         // Show error message
         if (result.error != null) {
@@ -131,12 +143,18 @@ class AdminDashboardController extends GetxController
       case 'terlambat':
         return 'Terlambat';
       case 'izin':
+      case 'ijin':
         return 'Izin';
       case 'sakit':
         return 'Sakit';
       default:
         return status;
     }
+  }
+
+  /// Helper untuk cek status dengan case-insensitive
+  bool _isStatus(String actualStatus, String expectedStatus) {
+    return actualStatus.toLowerCase() == expectedStatus.toLowerCase();
   }
 
   @override

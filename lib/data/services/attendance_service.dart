@@ -462,12 +462,14 @@ class AttendanceService {
 
   /// Get all attendance for a specific date (for admin dashboard)
   /// GET /absensi?tanggal={YYYY-MM-DD}&order_by=tanggal&order_dir=desc
+  /// If fetchAll is true, will fetch all pages to get complete data
   Future<AttendanceResult> getAttendanceByDate({
     required String tanggal,
     String? status,
     String? search,
     int? page,
     int perPage = 100,
+    bool fetchAll = true,
   }) async {
     try {
       final queryParams = <String, dynamic>{
@@ -508,6 +510,7 @@ class AttendanceService {
 
         if (data['success'] == true) {
           final attendanceData = data['data'];
+          List<AttendanceHistoryModel> allAttendees = [];
 
           if (attendanceData is Map<String, dynamic> &&
               attendanceData.containsKey('data')) {
@@ -519,11 +522,36 @@ class AttendanceService {
                   ),
                 )
                 .toList();
+            allAttendees.addAll(attendanceList);
+
+            // Fetch all pages if requested
+            if (fetchAll) {
+              final meta = attendanceData['meta'] as Map<String, dynamic>?;
+              if (meta != null) {
+                final lastPage = meta['last_page'] as int? ?? 1;
+                final currentPage = meta['current_page'] as int? ?? 1;
+
+                // Fetch remaining pages
+                for (int p = currentPage + 1; p <= lastPage; p++) {
+                  final pageResult = await getAttendanceByDate(
+                    tanggal: tanggal,
+                    status: status,
+                    search: search,
+                    page: p,
+                    perPage: perPage,
+                    fetchAll: false, // Prevent infinite recursion
+                  );
+                  if (pageResult.isSuccess && pageResult.data != null) {
+                    allAttendees.addAll(pageResult.data!);
+                  }
+                }
+              }
+            }
 
             AppLogger.info(
-              'AttendanceService: Found ${attendanceList.length} attendance records for $tanggal',
+              'AttendanceService: Found ${allAttendees.length} total attendance records for $tanggal',
             );
-            return AttendanceResult.success(attendanceList);
+            return AttendanceResult.success(allAttendees);
           } else if (attendanceData is List) {
             final attendanceList = attendanceData
                 .map(
@@ -532,11 +560,12 @@ class AttendanceService {
                   ),
                 )
                 .toList();
+            allAttendees.addAll(attendanceList);
 
             AppLogger.info(
-              'AttendanceService: Found ${attendanceList.length} attendance records for $tanggal',
+              'AttendanceService: Found ${allAttendees.length} attendance records for $tanggal',
             );
-            return AttendanceResult.success(attendanceList);
+            return AttendanceResult.success(allAttendees);
           }
         }
 
@@ -600,6 +629,207 @@ class AttendanceService {
       return null;
     }
   }
+
+  /// Export attendance data to CSV
+  /// GET /absensi/export/excel (returns CSV format)
+  Future<ExportResult> exportCsv({
+    String? userId,
+    String? status,
+    String? tanggal,
+    String? startDate,
+    String? endDate,
+    int? month,
+    int? year,
+    String? search,
+    String orderBy = 'tanggal',
+    String orderDir = 'desc',
+  }) async {
+    try {
+      final queryParams = <String, dynamic>{
+        'order_by': orderBy,
+        'order_dir': orderDir,
+      };
+
+      if (userId != null && userId.isNotEmpty) {
+        queryParams['user_id'] = userId;
+      }
+      if (status != null && status.isNotEmpty) {
+        queryParams['status'] = status;
+      }
+      if (tanggal != null && tanggal.isNotEmpty) {
+        queryParams['tanggal'] = tanggal;
+      }
+      if (startDate != null && startDate.isNotEmpty) {
+        queryParams['start_date'] = startDate;
+      }
+      if (endDate != null && endDate.isNotEmpty) {
+        queryParams['end_date'] = endDate;
+      }
+      if (month != null) {
+        queryParams['month'] = month.toString();
+      }
+      if (year != null) {
+        queryParams['year'] = year.toString();
+      }
+      if (search != null && search.isNotEmpty) {
+        queryParams['search'] = search;
+      }
+
+      AppLogger.info(
+        'AttendanceService: Exporting CSV with params: $queryParams',
+      );
+
+      final response = await _apiProvider.download(
+        '/absensi/export/excel',
+        queryParameters: queryParams,
+      );
+
+      AppLogger.info(
+        'AttendanceService: Export CSV response status: ${response.statusCode}',
+      );
+      AppLogger.info(
+        'AttendanceService: Response data type: ${response.data.runtimeType}',
+      );
+
+      // Check if response is JSON error (API returned error instead of file)
+      if (response.data is Map) {
+        final errorData = response.data as Map;
+        final message = errorData['message'] ?? 'Gagal mengekspor CSV';
+        AppLogger.error('AttendanceService: API returned JSON error: $errorData');
+        return ExportResult.failure('API Error: $message');
+      }
+
+      if (response.statusCode == 200) {
+        // Response is bytes (CSV text)
+        final bytes = response.data is List<int>
+            ? response.data as List<int>
+            : (response.data as String).codeUnits;
+        AppLogger.info(
+          'AttendanceService: Export CSV successful. Size: ${bytes.length} bytes',
+        );
+
+        // Validate CSV content (should start with ID,NPK or similar CSV header)
+        if (bytes.length >= 3) {
+          final header = String.fromCharCode(bytes[0]) +
+              String.fromCharCode(bytes[1]) +
+              String.fromCharCode(bytes[2]);
+          AppLogger.info('AttendanceService: CSV header starts with: $header');
+        }
+
+        return ExportResult.success(bytes, 'csv');
+      }
+
+      return ExportResult.failure('Gagal mengekspor CSV. Status: ${response.statusCode}');
+    } on DioException catch (e) {
+      final errorMessage = _handleDioException(e);
+      AppLogger.error('AttendanceService: Export CSV DioException', e, e.stackTrace);
+      return ExportResult.failure(errorMessage);
+    } catch (e, stackTrace) {
+      AppLogger.error('AttendanceService: Export CSV unexpected error', e, stackTrace);
+      return ExportResult.failure('Terjadi kesalahan: ${e.toString()}');
+    }
+  }
+
+  /// Export attendance data to PDF
+  /// GET /absensi/export/pdf
+  Future<ExportResult> exportPdf({
+    String? userId,
+    String? status,
+    String? tanggal,
+    String? startDate,
+    String? endDate,
+    int? month,
+    int? year,
+    String? search,
+    String orderBy = 'tanggal',
+    String orderDir = 'desc',
+  }) async {
+    try {
+      final queryParams = <String, dynamic>{
+        'order_by': orderBy,
+        'order_dir': orderDir,
+      };
+
+      if (userId != null && userId.isNotEmpty) {
+        queryParams['user_id'] = userId;
+      }
+      if (status != null && status.isNotEmpty) {
+        queryParams['status'] = status;
+      }
+      if (tanggal != null && tanggal.isNotEmpty) {
+        queryParams['tanggal'] = tanggal;
+      }
+      if (startDate != null && startDate.isNotEmpty) {
+        queryParams['start_date'] = startDate;
+      }
+      if (endDate != null && endDate.isNotEmpty) {
+        queryParams['end_date'] = endDate;
+      }
+      if (month != null) {
+        queryParams['month'] = month.toString();
+      }
+      if (year != null) {
+        queryParams['year'] = year.toString();
+      }
+      if (search != null && search.isNotEmpty) {
+        queryParams['search'] = search;
+      }
+
+      AppLogger.info(
+        'AttendanceService: Exporting PDF with params: $queryParams',
+      );
+
+      final response = await _apiProvider.download(
+        '/absensi/export/pdf',
+        queryParameters: queryParams,
+      );
+
+      AppLogger.info(
+        'AttendanceService: Export PDF response status: ${response.statusCode}',
+      );
+      AppLogger.info(
+        'AttendanceService: Response data type: ${response.data.runtimeType}',
+      );
+
+      // Check if response is JSON error (API returned error instead of file)
+      if (response.data is Map) {
+        final errorData = response.data as Map;
+        final message = errorData['message'] ?? 'Gagal mengekspor PDF';
+        AppLogger.error('AttendanceService: API returned JSON error: $errorData');
+        return ExportResult.failure('API Error: $message');
+      }
+
+      if (response.statusCode == 200) {
+        final bytes = response.data as List<int>;
+        AppLogger.info(
+          'AttendanceService: Export PDF successful. Size: ${bytes.length} bytes',
+        );
+
+        // Validate PDF file signature (PDF files start with %PDF)
+        if (bytes.length >= 4) {
+          final signature = String.fromCharCode(bytes[0]) +
+              String.fromCharCode(bytes[1]) +
+              String.fromCharCode(bytes[2]) +
+              String.fromCharCode(bytes[3]);
+          if (signature != '%PDF') {
+            AppLogger.error('AttendanceService: Invalid PDF file signature: $signature');
+            return ExportResult.failure('File tidak valid. Server mungkin mengembalikan error.');
+          }
+        }
+
+        return ExportResult.success(bytes, 'pdf');
+      }
+
+      return ExportResult.failure('Gagal mengekspor PDF. Status: ${response.statusCode}');
+    } on DioException catch (e) {
+      final errorMessage = _handleDioException(e);
+      AppLogger.error('AttendanceService: Export PDF DioException', e, e.stackTrace);
+      return ExportResult.failure(errorMessage);
+    } catch (e, stackTrace) {
+      AppLogger.error('AttendanceService: Export PDF unexpected error', e, stackTrace);
+      return ExportResult.failure('Terjadi kesalahan: ${e.toString()}');
+    }
+  }
 }
 
 /// Result wrapper for attendance operations
@@ -650,5 +880,32 @@ class StatsResult {
 
   factory StatsResult.failure(String error) {
     return StatsResult._(error: error, isSuccess: false);
+  }
+}
+
+/// Result wrapper for export operations
+class ExportResult {
+  final List<int>? data;
+  final String? error;
+  final bool isSuccess;
+  final String? extension;
+
+  ExportResult._({
+    this.data,
+    this.error,
+    required this.isSuccess,
+    this.extension,
+  });
+
+  factory ExportResult.success(List<int> data, String extension) {
+    return ExportResult._(
+      data: data,
+      isSuccess: true,
+      extension: extension,
+    );
+  }
+
+  factory ExportResult.failure(String error) {
+    return ExportResult._(error: error, isSuccess: false);
   }
 }
