@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:intl/intl.dart';
 import '../../../../../core/constants/app_colors.dart';
+import '../../../../data/models/attendance_history_model.dart';
 import '../controllers/admin_dashboard_controller.dart';
 
 class AdminReportsPage extends StatelessWidget {
@@ -66,7 +68,7 @@ class AdminReportsPage extends StatelessWidget {
                 ),
                 Obx(
                   () => Text(
-                    controller.monthYearText,
+                    controller.reportMonthYearText,
                     style: const TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w600,
@@ -90,22 +92,12 @@ class AdminReportsPage extends StatelessWidget {
 
   Widget _buildSummaryCards(AdminDashboardController controller) {
     return Obx(() {
-      int totalHadir = 0;
-      int totalIzin = 0;
-      int totalSakit = 0;
-
-      for (var report in controller.reports) {
-        totalHadir += report.hadir;
-        totalIzin += report.izin;
-        totalSakit += report.sakit;
-      }
-
       return Row(
         children: [
           Expanded(
             child: _buildReportSummaryCard(
               title: 'Total Hadir',
-              value: totalHadir.toString(),
+              value: controller.reportTotalHadir.toString(),
               icon: Icons.check_circle_outline,
               color: AppColors.success,
             ),
@@ -114,7 +106,7 @@ class AdminReportsPage extends StatelessWidget {
           Expanded(
             child: _buildReportSummaryCard(
               title: 'Total Izin',
-              value: totalIzin.toString(),
+              value: controller.reportTotalIzin.toString(),
               icon: Icons.event_note_outlined,
               color: AppColors.orange,
             ),
@@ -123,7 +115,7 @@ class AdminReportsPage extends StatelessWidget {
           Expanded(
             child: _buildReportSummaryCard(
               title: 'Total Sakit',
-              value: totalSakit.toString(),
+              value: controller.reportTotalSakit.toString(),
               icon: Icons.medical_services_outlined,
               color: AppColors.error,
             ),
@@ -184,9 +176,9 @@ class AdminReportsPage extends StatelessWidget {
   Widget _buildReportTable(AdminDashboardController controller) {
     return Obx(
       () {
-        final reportData = controller.reports;
+        final attendanceData = controller.reportAttendanceList;
 
-        if (reportData.isEmpty) {
+        if (attendanceData.isEmpty) {
           return _buildEmptyReportState();
         }
 
@@ -207,13 +199,18 @@ class AdminReportsPage extends StatelessWidget {
             children: [
               Padding(
                 padding: const EdgeInsets.all(16),
-                child: Text(
-                  'Detail Absensi Karyawan',
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                    color: AppColors.grey800,
-                  ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      'Detail Absensi (${attendanceData.length})',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                        color: AppColors.grey800,
+                      ),
+                    ),
+                  ],
                 ),
               ),
               SingleChildScrollView(
@@ -235,52 +232,63 @@ class AdminReportsPage extends StatelessWidget {
                     ),
                     DataColumn(
                       label: Text(
-                        'Hadir',
+                        'Tanggal',
                         style: TextStyle(fontWeight: FontWeight.bold),
                       ),
                     ),
                     DataColumn(
                       label: Text(
-                        'Izin',
+                        'Jam Masuk',
                         style: TextStyle(fontWeight: FontWeight.bold),
                       ),
                     ),
                     DataColumn(
                       label: Text(
-                        'Sakit',
+                        'Jam Keluar',
+                        style: TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                    ),
+                    DataColumn(
+                      label: Text(
+                        'Status',
                         style: TextStyle(fontWeight: FontWeight.bold),
                       ),
                     ),
                   ],
-                  rows: reportData.map((report) {
+                  rows: attendanceData.map((attendance) {
+                    final nama = attendance.user?.name ?? '-';
+                    final npk = attendance.user?.npk ?? '-';
+                    final tanggal = DateFormat('dd/MM/yyyy', 'id_ID').format(attendance.tanggal);
+                    final jamMasuk = attendance.clockIn.isNotEmpty
+                        ? attendance.clockIn.substring(0, attendance.clockIn.length >= 5 ? 5 : attendance.clockIn.length)
+                        : '-';
+                    final jamKeluar = attendance.clockOut?.isNotEmpty == true
+                        ? attendance.clockOut!.substring(0, attendance.clockOut!.length >= 5 ? 5 : attendance.clockOut!.length)
+                        : '-';
+                    final status = _formatStatusDisplay(attendance.status);
+                    final statusColor = _getStatusColor(attendance.status);
+
                     return DataRow(
                       cells: [
-                        DataCell(Text(report.name)),
-                        DataCell(Text(report.npk)),
+                        DataCell(Text(nama)),
+                        DataCell(Text(npk, style: const TextStyle(fontFamily: 'monospace'))),
+                        DataCell(Text(tanggal)),
+                        DataCell(Text(jamMasuk)),
+                        DataCell(Text(jamKeluar)),
                         DataCell(
-                          Text(
-                            report.hadir.toString(),
-                            style: const TextStyle(
-                              color: AppColors.success,
-                              fontWeight: FontWeight.w600,
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                            decoration: BoxDecoration(
+                              color: statusColor.withValues(alpha: 0.1),
+                              borderRadius: BorderRadius.circular(6),
                             ),
-                          ),
-                        ),
-                        DataCell(
-                          Text(
-                            report.izin.toString(),
-                            style: const TextStyle(
-                              color: AppColors.orange,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        ),
-                        DataCell(
-                          Text(
-                            report.sakit.toString(),
-                            style: const TextStyle(
-                              color: AppColors.error,
-                              fontWeight: FontWeight.w600,
+                            child: Text(
+                              status,
+                              style: TextStyle(
+                                color: statusColor,
+                                fontWeight: FontWeight.w600,
+                                fontSize: 12,
+                              ),
                             ),
                           ),
                         ),
@@ -294,6 +302,38 @@ class AdminReportsPage extends StatelessWidget {
         );
       },
     );
+  }
+
+  String _formatStatusDisplay(String status) {
+    switch (status.toLowerCase()) {
+      case 'hadir':
+        return 'Hadir';
+      case 'terlambat':
+        return 'Terlambat';
+      case 'izin':
+      case 'ijin':
+        return 'Izin';
+      case 'sakit':
+        return 'Sakit';
+      default:
+        return status;
+    }
+  }
+
+  Color _getStatusColor(String status) {
+    switch (status.toLowerCase()) {
+      case 'hadir':
+        return AppColors.success;
+      case 'terlambat':
+        return AppColors.warning;
+      case 'izin':
+      case 'ijin':
+        return AppColors.orange;
+      case 'sakit':
+        return AppColors.error;
+      default:
+        return AppColors.grey600;
+    }
   }
 
   Widget _buildEmptyReportState() {
@@ -336,7 +376,7 @@ class AdminReportsPage extends StatelessWidget {
           const SizedBox(height: 8),
           Obx(
             () => Text(
-              'Data laporan untuk ${Get.find<AdminDashboardController>().monthYearText} belum tersedia.',
+              'Data laporan untuk ${Get.find<AdminDashboardController>().reportMonthYearText} belum tersedia.',
               style: const TextStyle(
                 fontSize: 14,
                 color: AppColors.grey500,

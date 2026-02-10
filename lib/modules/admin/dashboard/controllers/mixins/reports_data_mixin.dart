@@ -1,24 +1,37 @@
 import 'dart:io';
-import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
 import '../../../../../core/constants/app_colors.dart';
-import '../../../../../../data/models/report_model.dart';
+import '../../../../../../data/models/attendance_history_model.dart';
 import '../../../../../../data/services/attendance_service.dart';
 
 mixin ReportsDataMixin on GetxController {
   // Reports Page Data
   final RxBool isLoadingReports = false.obs;
   final Rx<DateTime> selectedMonth = DateTime.now().obs;
-  final RxList<ReportModel> reports = <ReportModel>[].obs;
+  final RxList<AttendanceHistoryModel> reportAttendanceList = <AttendanceHistoryModel>[].obs;
 
   // Get AttendanceService from GetX
   AttendanceService get _attendanceService => Get.find<AttendanceService>();
 
+  // Computed Stats for Reports (different from Dashboard stats)
+  int get reportTotalHadir => reportAttendanceList.where((a) => _isStatus(a.status, 'hadir')).length;
+  int get reportTotalIzin => reportAttendanceList.where((a) => _isStatus(a.status, 'izin') || _isStatus(a.status, 'ijin')).length;
+  int get reportTotalSakit => reportAttendanceList.where((a) => _isStatus(a.status, 'sakit')).length;
+
   Future<void> loadReports();
+
+  String get reportMonthYearText {
+    return DateFormat('MMMM yyyy', 'id_ID').format(selectedMonth.value);
+  }
+
+  /// Helper untuk cek status dengan case-insensitive
+  bool _isStatus(String actualStatus, String expectedStatus) {
+    return actualStatus.toLowerCase() == expectedStatus.toLowerCase();
+  }
 
   String get monthYearText {
     return DateFormat('MMMM yyyy', 'id_ID').format(selectedMonth.value);

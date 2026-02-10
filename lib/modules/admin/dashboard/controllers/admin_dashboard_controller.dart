@@ -10,7 +10,6 @@ import '../../../../routes/app_routes.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../data/models/dashboard_attendance_model.dart';
 import '../../../../data/models/employee_model.dart';
-import '../../../../data/models/report_model.dart';
 import 'mixins/dashboard_data_mixin.dart';
 import 'mixins/employees_data_mixin.dart';
 import 'mixins/reports_data_mixin.dart';
@@ -159,41 +158,36 @@ class AdminDashboardController extends GetxController
 
   @override
   Future<void> loadReports() async {
-    // Mock data - replace with API
-    reports.value = [
-      ReportModel.createMock(
-        name: 'Karyawan1',
-        npk: 'NPK001',
-        hadir: 20,
-        izin: 1,
-        sakit: 0,
-        total: 21,
-      ),
-      ReportModel.createMock(
-        name: 'Karyawan2',
-        npk: 'NPK002',
-        hadir: 18,
-        izin: 2,
-        sakit: 1,
-        total: 21,
-      ),
-      ReportModel.createMock(
-        name: 'Karyawan3',
-        npk: 'NPK003',
-        hadir: 19,
-        izin: 0,
-        sakit: 2,
-        total: 21,
-      ),
-      ReportModel.createMock(
-        name: 'Karyawan4',
-        npk: 'NPK004',
-        hadir: 21,
-        izin: 0,
-        sakit: 0,
-        total: 21,
-      ),
-    ];
+    try {
+      isLoadingReports.value = true;
+      final month = selectedMonth.value.month;
+      final year = selectedMonth.value.year;
+
+      final result = await _attendanceService.getAttendanceByMonthYear(
+        month: month,
+        year: year,
+      );
+
+      if (result.isSuccess && result.data != null) {
+        reportAttendanceList.value = result.data!;
+      } else {
+        if (result.error != null) {
+          Get.snackbar(
+            'Error',
+            result.error!,
+            snackPosition: SnackPosition.BOTTOM,
+            backgroundColor: AppColors.error,
+            colorText: Colors.white,
+          );
+        }
+        reportAttendanceList.clear();
+      }
+    } catch (e) {
+      AppLogger.error('AdminDashboard: Error loading reports', e);
+      reportAttendanceList.clear();
+    } finally {
+      isLoadingReports.value = false;
+    }
   }
 
   // Navigation
