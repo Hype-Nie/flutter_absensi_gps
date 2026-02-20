@@ -5,7 +5,6 @@ import '../../../../core/widgets/app_footer.dart';
 import '../controllers/employee_dashboard_controller.dart';
 import '../widgets/employee_stat_card.dart';
 import '../widgets/employee_attendance_item.dart';
-import '../widgets/attendance_options_sheet.dart';
 
 class EmployeeDashboardView extends GetView<EmployeeDashboardController> {
   const EmployeeDashboardView({super.key});
@@ -59,20 +58,15 @@ class EmployeeDashboardView extends GetView<EmployeeDashboardController> {
                 'Informasi',
                 'Absen keluar dibuka mulai jam 9 pagi',
                 snackPosition: SnackPosition.TOP,
-                backgroundColor: AppColors.warning.withOpacity(0.1),
+                backgroundColor: AppColors.warning.withValues(alpha: 0.1),
                 colorText: AppColors.warning,
                 duration: const Duration(seconds: 3),
               );
               return;
             }
 
-            if (isClockOut) {
-              // For clock-out, go directly to GPS validation
-              controller.goToAttendance('hadir');
-            } else {
-              // For clock-in, show options sheet
-              showAttendanceOptionsSheet(context);
-            }
+            // Go directly to GPS validation
+            controller.goToAttendance('hadir');
           },
           backgroundColor: canSubmit ? AppColors.primary : AppColors.grey400,
           icon: Icon(

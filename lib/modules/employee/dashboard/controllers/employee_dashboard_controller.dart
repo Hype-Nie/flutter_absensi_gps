@@ -201,8 +201,20 @@ class EmployeeDashboardController extends GetxController
   }
 
   void goToAttendance(String type) {
+    // Determine attendance type based on state
+    if (todayAttendance.value != null && todayAttendance.value!.clockOut == null) {
+      // Clock out scenario
+      type = 'hadir'; // Default to 'hadir' for clock out
+    }
     // Navigate to GPS validation (API will handle duplicate attendance prevention)
-    Get.toNamed(AppRoutes.employeeGpsValidation, arguments: {'type': type});
+    Get.toNamed(
+      AppRoutes.employeeGpsValidation,
+      arguments: {
+        'type': type,
+        'isClockOut': todayAttendance.value != null &&
+            todayAttendance.value!.clockOut == null,
+      },
+    );
   }
 
   void logout() {
