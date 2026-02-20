@@ -25,17 +25,20 @@ class GpsValidationController extends GetxController {
   // Security status
   final isSecurityChecking = false.obs;
   final securityWarnings = <String>[].obs;
-  final securityScore = 100.obs;
+
+  // Clock-in/out state
+  final isClockOut = false.obs;
 
   // Validation radius in meters
   final double validationRadius = 200.0;
 
   // 10 predefined location points - User akan sesuaikan koordinatnya nanti
   final List<LocationPoint> validationPoints = const [
-    LocationPoint(name: 'Lokasi 1', position: LatLng(-8.151595, 113.734986)),
+    // LocationPoint(name: 'Lokasi 1', position: LatLng(-8.151595, 113.734986)),
+    LocationPoint(name: 'Lokasi 1', position: LatLng(-7.15162, 111.60486)),
     LocationPoint(name: 'Lokasi 2', position: LatLng(-8.146722, 113.686282)),
-    LocationPoint(name: 'Lokasi 3', position: LatLng(-7.2585, 112.7530)),
-    LocationPoint(name: 'Lokasi 4', position: LatLng(-7.2590, 112.7535)),
+    LocationPoint(name: 'Lokasi 3', position: LatLng(-8.151595, 113.734986)),
+    LocationPoint(name: 'Lokasi 4', position: LatLng(-8.17268, 113.68994)),
     LocationPoint(name: 'Lokasi 5', position: LatLng(-7.2595, 112.7540)),
     LocationPoint(name: 'Lokasi 6', position: LatLng(-7.2600, 112.7545)),
     LocationPoint(name: 'Lokasi 7', position: LatLng(-7.2605, 112.7550)),
@@ -49,6 +52,7 @@ class GpsValidationController extends GetxController {
     super.onInit();
     final args = Get.arguments as Map<String, dynamic>?;
     attendanceType.value = args?['type'] ?? 'hadir';
+    isClockOut.value = args?['isClockOut'] ?? false;
     _getCurrentLocation();
   }
 
@@ -122,7 +126,6 @@ class GpsValidationController extends GetxController {
     );
 
     isSecurityChecking.value = false;
-    securityScore.value = securityReport.securityScore;
     securityWarnings.value = securityReport.warnings;
 
     // Check if security check passed
@@ -173,6 +176,7 @@ class GpsValidationController extends GetxController {
             'latitude': currentPosition.value!.latitude,
             'longitude': currentPosition.value!.longitude,
             'accurateTime': securityReport.accurateTime, // Pass NTP time
+            'isClockOut': isClockOut.value,
           },
         );
       });
@@ -215,28 +219,6 @@ class GpsValidationController extends GetxController {
                     ),
                   ],
                 ),
-              ),
-            ),
-            const SizedBox(height: 12),
-            Container(
-              padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                color: Colors.red[50],
-                borderRadius: BorderRadius.circular(8),
-                border: Border.all(color: Colors.red, width: 1),
-              ),
-              child: Row(
-                children: [
-                  Icon(Icons.block, color: Colors.red, size: 20),
-                  const SizedBox(width: 8),
-                  Text(
-                    'Skor Keamanan: ${report.securityScore}% - GAGAL',
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      color: Colors.red,
-                    ),
-                  ),
-                ],
               ),
             ),
             const SizedBox(height: 12),

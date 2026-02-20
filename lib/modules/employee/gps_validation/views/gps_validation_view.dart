@@ -39,12 +39,26 @@ class GpsValidationView extends GetView<GpsValidationController> {
             color: AppColors.textPrimary,
           ),
           const SizedBox(width: 8),
-          const Text(
-            'Validasi GPS',
-            style: TextStyle(
-              fontSize: 24,
-              fontWeight: FontWeight.bold,
-              color: AppColors.textPrimary,
+          Expanded(
+            child: Obx(
+              () => Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    'Validasi GPS',
+                    style: TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                      color: AppColors.textPrimary,
+                    ),
+                  ),
+                  if (controller.isClockOut.value)
+                    Text(
+                      'Clock Out',
+                      style: TextStyle(fontSize: 14, color: AppColors.grey600),
+                    ),
+                ],
+              ),
             ),
           ),
         ],
