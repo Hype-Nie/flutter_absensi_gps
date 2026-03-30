@@ -86,12 +86,6 @@ class AdminDashboardController extends GetxController
         totalIzin.value = attendances.where((a) {
           final match =
               _isStatus(a.status, 'izin') || _isStatus(a.status, 'ijin');
-          if (!match && a.status.toLowerCase().contains('i')) {
-            // Log status yang mengandung 'i' tapi tidak match
-            AppLogger.warning(
-              'Status with "i" but not matched: "${a.status}" for ${a.user?.name}',
-            );
-          }
           return match;
         }).length;
         totalSakit.value = attendances

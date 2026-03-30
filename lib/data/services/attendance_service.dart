@@ -480,6 +480,56 @@ class AttendanceService {
     return 'Terjadi kesalahan: ${e.message ?? "Unknown error"}';
   }
 
+  /// Get a single attendance record by ID
+  /// GET /absensi/{id}
+  Future<AttendanceResult> getSingleAttendance(int id) async {
+    try {
+      AppLogger.info('AttendanceService: Fetching single attendance ID: $id');
+
+      final response = await _apiProvider.get('/absensi/$id');
+
+      AppLogger.info(
+        'AttendanceService: Response status: ${response.statusCode}',
+      );
+
+      if (response.statusCode == 200) {
+        final data = response.data as Map<String, dynamic>;
+
+        if (data['success'] == true) {
+          final attendanceData = data['data'];
+
+          if (attendanceData is Map<String, dynamic>) {
+            final attendance = AttendanceHistoryModel.fromJson(attendanceData);
+            AppLogger.info(
+              'AttendanceService: Found attendance ID: ${attendance.id}, user: ${attendance.user?.name}',
+            );
+            return AttendanceResult.success([attendance]);
+          }
+        }
+
+        final message = data['message'] ?? 'Data absensi tidak ditemukan';
+        return AttendanceResult.failure(message);
+      }
+
+      return AttendanceResult.failure('Data absensi tidak ditemukan');
+    } on DioException catch (e) {
+      final errorMessage = _handleDioException(e);
+      AppLogger.error(
+        'AttendanceService: getSingleAttendance DioException',
+        e,
+        e.stackTrace,
+      );
+      return AttendanceResult.failure(errorMessage);
+    } catch (e, stackTrace) {
+      AppLogger.error(
+        'AttendanceService: getSingleAttendance unexpected error',
+        e,
+        stackTrace,
+      );
+      return AttendanceResult.failure('Terjadi kesalahan: ${e.toString()}');
+    }
+  }
+
   /// Get user attendance statistics
   /// GET /absensi/user/{id}/stats
   Future<StatsResult> getUserStats(String userId) async {

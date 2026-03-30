@@ -56,12 +56,6 @@ class DashboardAttendanceItem extends StatelessWidget {
               offset: const Offset(0, 4),
             ),
           ],
-          border: attendance.status == 'Menunggu Konfirmasi'
-              ? Border.all(
-                  color: AppColors.info.withValues(alpha: 0.5),
-                  width: 1.5,
-                )
-              : null,
         ),
         child: Row(
           children: [
@@ -89,6 +83,8 @@ class DashboardAttendanceItem extends StatelessWidget {
                       fontSize: 16,
                       fontWeight: FontWeight.w600,
                     ),
+                    overflow: TextOverflow.ellipsis,
+                    maxLines: 1,
                   ),
                   const SizedBox(height: 4),
                   Row(
@@ -99,11 +95,14 @@ class DashboardAttendanceItem extends StatelessWidget {
                         color: AppColors.grey500,
                       ),
                       const SizedBox(width: 4),
-                      Text(
-                        attendance.date,
-                        style: const TextStyle(
-                          fontSize: 12,
-                          color: AppColors.grey500,
+                      Flexible(
+                        child: Text(
+                          attendance.date,
+                          style: const TextStyle(
+                            fontSize: 12,
+                            color: AppColors.grey500,
+                          ),
+                          overflow: TextOverflow.ellipsis,
                         ),
                       ),
                       const SizedBox(width: 12),
@@ -113,11 +112,14 @@ class DashboardAttendanceItem extends StatelessWidget {
                         color: AppColors.grey500,
                       ),
                       const SizedBox(width: 4),
-                      Text(
-                        '${attendance.jamMasuk} - ${attendance.jamKeluar}',
-                        style: const TextStyle(
-                          fontSize: 12,
-                          color: AppColors.grey500,
+                      Flexible(
+                        child: Text(
+                          '${attendance.jamMasuk} - ${attendance.jamKeluar}',
+                          style: const TextStyle(
+                            fontSize: 12,
+                            color: AppColors.grey500,
+                          ),
+                          overflow: TextOverflow.ellipsis,
                         ),
                       ),
                     ],
@@ -125,19 +127,23 @@ class DashboardAttendanceItem extends StatelessWidget {
                 ],
               ),
             ),
+            const SizedBox(width: 8),
             Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
               decoration: BoxDecoration(
                 color: statusColor.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(20),
               ),
+              constraints: const BoxConstraints(maxWidth: 120),
               child: Text(
                 attendance.status,
                 style: TextStyle(
-                  fontSize: 12,
+                  fontSize: 11,
                   fontWeight: FontWeight.w600,
                   color: statusColor,
                 ),
+                overflow: TextOverflow.ellipsis,
+                maxLines: 1,
               ),
             ),
           ],

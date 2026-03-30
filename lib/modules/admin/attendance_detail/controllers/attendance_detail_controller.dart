@@ -1,31 +1,37 @@
+import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../../../data/services/attendance_service.dart';
+import '../../../../data/services/auth_service.dart';
 import '../../../../data/models/attendance_history_model.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/utils/logger.dart';
 
 class AttendanceDetailController extends GetxController {
   final AttendanceService _attendanceService = Get.find<AttendanceService>();
+  final AuthService _authService = Get.find<AuthService>();
 
   final isLoading = false.obs;
   final isUpdating = false.obs;
   final attendance = Rxn<AttendanceHistoryModel>();
   final selectedStatus = ''.obs;
+  final canUpdateStatus = false.obs;
 
   final List<Map<String, String>> statusOptions = [
     {'value': 'hadir', 'label': 'Hadir'},
     {'value': 'terlambat', 'label': 'Terlambat'},
     {'value': 'izin', 'label': 'Izin'},
     {'value': 'sakit', 'label': 'Sakit'},
-    {'value': 'alpha', 'label': 'Alpha'},
-    {'value': 'menunggu_konfirmasi', 'label': 'Menunggu Konfirmasi'},
   ];
 
   @override
   void onInit() {
     super.onInit();
     final args = Get.arguments as Map<String, dynamic>?;
+    final forceReadOnly = args?['readOnly'] == true;
+    final isAdmin = _authService.currentUser.value?.isAdmin == true;
+    canUpdateStatus.value = isAdmin && !forceReadOnly;
+
     final attendanceId = args?['attendanceId'] as int?;
     if (attendanceId != null) {
       _loadAttendance(attendanceId);
@@ -35,7 +41,7 @@ class AttendanceDetailController extends GetxController {
   Future<void> _loadAttendance(int id) async {
     isLoading.value = true;
     try {
-      final result = await _attendanceService.getAttendanceById(id.toString());
+      final result = await _attendanceService.getSingleAttendance(id);
       if (result.isSuccess && result.data != null && result.data!.isNotEmpty) {
         attendance.value = result.data!.first;
         selectedStatus.value = attendance.value!.status.toLowerCase();
@@ -74,6 +80,17 @@ class AttendanceDetailController extends GetxController {
   }
 
   Future<void> updateStatus() async {
+    if (!canUpdateStatus.value) {
+      Get.snackbar(
+        'Akses Ditolak',
+        'Hanya admin yang dapat mengubah status absensi',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: AppColors.error,
+        colorText: Colors.white,
+      );
+      return;
+    }
+
     final att = attendance.value;
     if (att == null) return;
 
@@ -127,7 +144,7 @@ class AttendanceDetailController extends GetxController {
       final result = await _attendanceService.updateStatus(
         id: att.id,
         status: selectedStatus.value,
-        lateDuration: att.lateDuration ?? 0,
+        lateDuration: max(0, att.lateDuration ?? 0),
       );
 
       if (result.isSuccess && result.data != null) {

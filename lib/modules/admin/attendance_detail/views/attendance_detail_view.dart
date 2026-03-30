@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../../../core/constants/app_colors.dart';
+import '../../../../data/models/attendance_history_model.dart';
 import '../controllers/attendance_detail_controller.dart';
 
 class AttendanceDetailView extends GetView<AttendanceDetailController> {
@@ -103,8 +104,10 @@ class AttendanceDetailView extends GetView<AttendanceDetailController> {
             _buildLocationInfo(att),
             const SizedBox(height: 16),
             _buildPhotoSection(att),
-            const SizedBox(height: 24),
-            _buildStatusUpdateSection(att),
+            if (controller.canUpdateStatus.value) ...[
+              const SizedBox(height: 24),
+              _buildStatusUpdateSection(att),
+            ],
             const SizedBox(height: 32),
           ],
         ),
@@ -112,7 +115,7 @@ class AttendanceDetailView extends GetView<AttendanceDetailController> {
     });
   }
 
-  Widget _buildEmployeeInfo(dynamic att) {
+  Widget _buildEmployeeInfo(AttendanceHistoryModel att) {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
@@ -166,7 +169,7 @@ class AttendanceDetailView extends GetView<AttendanceDetailController> {
     );
   }
 
-  Widget _buildAttendanceDetails(dynamic att) {
+  Widget _buildAttendanceDetails(AttendanceHistoryModel att) {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
@@ -211,7 +214,7 @@ class AttendanceDetailView extends GetView<AttendanceDetailController> {
     );
   }
 
-  Widget _buildLocationInfo(dynamic att) {
+  Widget _buildLocationInfo(AttendanceHistoryModel att) {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
@@ -263,7 +266,7 @@ class AttendanceDetailView extends GetView<AttendanceDetailController> {
     );
   }
 
-  Widget _buildPhotoSection(dynamic att) {
+  Widget _buildPhotoSection(AttendanceHistoryModel att) {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
@@ -299,7 +302,12 @@ class AttendanceDetailView extends GetView<AttendanceDetailController> {
                       ),
                     ),
                     const SizedBox(height: 8),
-                    _buildPhoto(att.clockInImageUrl),
+                    GestureDetector(
+                      onTap: att.clockInImageUrl != null
+                          ? () => _showImagePreview(att.clockInImageUrl!)
+                          : null,
+                      child: _buildPhoto(att.clockInImageUrl),
+                    ),
                   ],
                 ),
               ),
@@ -316,7 +324,12 @@ class AttendanceDetailView extends GetView<AttendanceDetailController> {
                       ),
                     ),
                     const SizedBox(height: 8),
-                    _buildPhoto(att.clockOutImageUrl),
+                    GestureDetector(
+                      onTap: att.clockOutImageUrl != null
+                          ? () => _showImagePreview(att.clockOutImageUrl!)
+                          : null,
+                      child: _buildPhoto(att.clockOutImageUrl),
+                    ),
                   ],
                 ),
               ),
@@ -362,6 +375,19 @@ class AttendanceDetailView extends GetView<AttendanceDetailController> {
         height: 120,
         width: double.infinity,
         fit: BoxFit.cover,
+        loadingBuilder: (context, child, loadingProgress) {
+          if (loadingProgress == null) return child;
+          return Container(
+            height: 120,
+            decoration: BoxDecoration(
+              color: Colors.grey[200],
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: const Center(
+              child: CircularProgressIndicator(strokeWidth: 2),
+            ),
+          );
+        },
         errorBuilder: (context, error, stackTrace) {
           return Container(
             height: 120,
@@ -388,7 +414,7 @@ class AttendanceDetailView extends GetView<AttendanceDetailController> {
     );
   }
 
-  Widget _buildStatusUpdateSection(dynamic att) {
+  Widget _buildStatusUpdateSection(AttendanceHistoryModel att) {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
@@ -534,5 +560,82 @@ class AttendanceDetailView extends GetView<AttendanceDetailController> {
       default:
         return AppColors.grey600;
     }
+  }
+
+  void _showImagePreview(String imageUrl) {
+    Get.dialog(
+      Dialog(
+        insetPadding: const EdgeInsets.all(16),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(16),
+              ),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(16),
+                child: Image.network(
+                  imageUrl,
+                  fit: BoxFit.contain,
+                  loadingBuilder: (context, child, loadingProgress) {
+                    if (loadingProgress == null) return child;
+                    return Container(
+                      height: 300,
+                      decoration: BoxDecoration(
+                        color: Colors.grey[200],
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                      child: const Center(
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      ),
+                    );
+                  },
+                  errorBuilder: (context, error, stackTrace) {
+                    return Container(
+                      height: 300,
+                      decoration: BoxDecoration(
+                        color: Colors.grey[200],
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                      child: Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(
+                              Icons.broken_image,
+                              size: 48,
+                              color: Colors.grey[400],
+                            ),
+                            const SizedBox(height: 8),
+                            Text(
+                              'Gagal memuat gambar',
+                              style: TextStyle(
+                                fontSize: 14,
+                                color: Colors.grey[600],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              ),
+            ),
+            const SizedBox(height: 16),
+            TextButton(
+              onPressed: () => Get.back(),
+              child: const Text(
+                'Tutup',
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+              ),
+            ),
+          ],
+        ),
+      ),
+      barrierColor: Colors.black87,
+    );
   }
 }

@@ -141,7 +141,10 @@ class AttendanceHistoryModel {
     final baseUrl = dotenv.env['BASE_URL'];
     final image = clockInImage;
     if (baseUrl == null || image == null || image.isEmpty) return null;
-    return '$baseUrl/clock-in/$image';
+    final base = baseUrl.endsWith('/api')
+        ? baseUrl.substring(0, baseUrl.length - 4)
+        : baseUrl;
+    return '$base/$image';
   }
 
   /// Get full URL for clock-out image
@@ -149,6 +152,9 @@ class AttendanceHistoryModel {
     final baseUrl = dotenv.env['BASE_URL'];
     final image = clockOutImage;
     if (baseUrl == null || image == null || image.isEmpty) return null;
-    return '$baseUrl/clock_out/$image';
+    final base = baseUrl.endsWith('/api')
+        ? baseUrl.substring(0, baseUrl.length - 4)
+        : baseUrl;
+    return '$base/$image';
   }
 }
