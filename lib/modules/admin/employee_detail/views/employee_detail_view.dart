@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../data/models/attendance_history_model.dart';
+import '../../../../routes/app_routes.dart';
 import '../controllers/employee_detail_controller.dart';
 
 class EmployeeDetailView extends GetView<EmployeeDetailController> {
@@ -308,6 +309,9 @@ class EmployeeDetailView extends GetView<EmployeeDetailController> {
       case 'izin':
         statusColor = Colors.blue;
         break;
+      case 'menunggu_konfirmasi':
+        statusColor = AppColors.info;
+        break;
       case 'alpha':
         statusColor = Colors.grey;
         break;
@@ -315,76 +319,94 @@ class EmployeeDetailView extends GetView<EmployeeDetailController> {
         statusColor = Colors.grey;
     }
 
-    return Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Row(
-        children: [
-          Container(
-            width: 44,
-            height: 44,
-            decoration: BoxDecoration(
-              color: statusColor.withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(10),
+    return GestureDetector(
+      onTap: () {
+        Get.toNamed(
+          AppRoutes.adminAttendanceDetail,
+          arguments: {'attendanceId': attendance.id},
+        );
+      },
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 12),
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(12),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.05),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
             ),
-            child: Icon(
-              attendance.status.toLowerCase() == 'hadir' ||
-                      attendance.status.toLowerCase() == 'terlambat'
-                  ? Icons.check_circle_outline
-                  : attendance.status.toLowerCase() == 'sakit'
-                  ? Icons.medical_services_outlined
-                  : Icons.event_note_outlined,
-              color: statusColor,
-              size: 24,
-            ),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  attendance.formattedDate,
-                  style: const TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  'Masuk: ${attendance.clockIn} | Keluar: ${attendance.clockOut ?? '-'}',
-                  style: TextStyle(fontSize: 12, color: Colors.grey[500]),
-                ),
-              ],
-            ),
-          ),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-            decoration: BoxDecoration(
-              color: statusColor.withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(20),
-            ),
-            child: Text(
-              attendance.statusDisplay,
-              style: TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.w600,
+          ],
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 44,
+              height: 44,
+              decoration: BoxDecoration(
+                color: statusColor.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Icon(
+                attendance.status.toLowerCase() == 'menunggu_konfirmasi'
+                    ? Icons.hourglass_top
+                    : attendance.status.toLowerCase() == 'hadir' ||
+                          attendance.status.toLowerCase() == 'terlambat'
+                    ? Icons.check_circle_outline
+                    : attendance.status.toLowerCase() == 'sakit'
+                    ? Icons.medical_services_outlined
+                    : Icons.event_note_outlined,
                 color: statusColor,
+                size: 24,
               ),
             ),
-          ),
-        ],
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    attendance.formattedDate,
+                    style: const TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                    ),
+                    overflow: TextOverflow.ellipsis,
+                    maxLines: 1,
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    'Masuk: ${attendance.clockIn} | Keluar: ${attendance.clockOut ?? '-'}',
+                    style: TextStyle(fontSize: 12, color: Colors.grey[500]),
+                    overflow: TextOverflow.ellipsis,
+                    maxLines: 1,
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(width: 8),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+              decoration: BoxDecoration(
+                color: statusColor.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(20),
+              ),
+              constraints: const BoxConstraints(maxWidth: 120),
+              child: Text(
+                attendance.statusDisplay,
+                style: TextStyle(
+                  fontSize: 11,
+                  fontWeight: FontWeight.w600,
+                  color: statusColor,
+                ),
+                overflow: TextOverflow.ellipsis,
+                maxLines: 1,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

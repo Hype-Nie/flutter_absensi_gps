@@ -29,6 +29,9 @@ class GpsValidationController extends GetxController {
   // Clock-in/out state
   final isClockOut = false.obs;
 
+  // Outside location state
+  final isOutsideLocation = false.obs;
+
   // Validation radius in meters
   final double validationRadius = 200.0;
 
@@ -157,6 +160,7 @@ class GpsValidationController extends GetxController {
 
     // Validate if within radius
     if (minDistance <= validationRadius) {
+      isOutsideLocation.value = false;
       isLocationValid.value = true;
       Get.snackbar(
         'Validasi Berhasil',
@@ -167,7 +171,6 @@ class GpsValidationController extends GetxController {
         duration: const Duration(seconds: 2),
       );
 
-      // Navigate to photo validation after short delay
       Future.delayed(const Duration(seconds: 2), () {
         Get.toNamed(
           AppRoutes.employeePhotoValidation,
@@ -175,22 +178,86 @@ class GpsValidationController extends GetxController {
             'type': attendanceType.value,
             'latitude': currentPosition.value!.latitude,
             'longitude': currentPosition.value!.longitude,
-            'accurateTime': securityReport.accurateTime, // Pass NTP time
+            'accurateTime': securityReport.accurateTime,
             'isClockOut': isClockOut.value,
+            'isOutsideLocation': false,
           },
         );
       });
     } else {
       isLocationValid.value = false;
-      Get.snackbar(
-        'Validasi Gagal',
-        'Anda berada ${minDistance.toStringAsFixed(0)}m dari ${closestPoint?.name}.\nJarak maksimal: ${validationRadius.toStringAsFixed(0)}m',
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.red,
-        colorText: Colors.white,
-        duration: const Duration(seconds: 4),
-      );
+      _showOutsideLocationDialog(closestPoint, minDistance, securityReport);
     }
+  }
+
+  void _showOutsideLocationDialog(
+    LocationPoint? closestPoint,
+    double distance,
+    SecurityReport securityReport,
+  ) {
+    Get.dialog(
+      AlertDialog(
+        icon: Icon(Icons.location_off, color: Colors.orange, size: 48),
+        title: const Text('Diluar Area Lokasi'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'Anda berada di luar area lokasi yang ditentukan.',
+              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Jarak: ${distance.toStringAsFixed(0)}m dari ${closestPoint?.name ?? "lokasi terdekat"}',
+              style: const TextStyle(fontSize: 13),
+            ),
+            Text(
+              'Jarak maksimal: ${validationRadius.toStringAsFixed(0)}m',
+              style: const TextStyle(fontSize: 13),
+            ),
+            const SizedBox(height: 12),
+            const Text(
+              'Jika melanjutkan, absensi Anda akan berstatus "Menunggu Konfirmasi" dan memerlukan persetujuan admin.',
+              style: TextStyle(
+                fontSize: 13,
+                color: Colors.orange,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Get.back(closeOverlays: true),
+            child: const Text('Batal'),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              Get.back(closeOverlays: true);
+              isOutsideLocation.value = true;
+              Get.toNamed(
+                AppRoutes.employeePhotoValidation,
+                arguments: {
+                  'type': attendanceType.value,
+                  'latitude': currentPosition.value!.latitude,
+                  'longitude': currentPosition.value!.longitude,
+                  'accurateTime': securityReport.accurateTime,
+                  'isClockOut': isClockOut.value,
+                  'isOutsideLocation': true,
+                },
+              );
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.orange,
+              foregroundColor: Colors.white,
+            ),
+            child: const Text('Lanjutkan'),
+          ),
+        ],
+      ),
+      barrierDismissible: false,
+    );
   }
 
   void _showSecurityWarningDialog(SecurityReport report) {
