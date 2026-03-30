@@ -36,6 +36,9 @@ class PhotoValidationController extends GetxController {
   final canSubmit = true.obs;
   final timeUntilCanSubmit = ''.obs;
 
+  // Outside location state
+  final isOutsideLocation = false.obs;
+
   final ImagePicker _picker = ImagePicker();
 
   @override
@@ -55,6 +58,11 @@ class PhotoValidationController extends GetxController {
     if (args != null && args['securityWarnings'] != null) {
       final warnings = args['securityWarnings'] as List;
       securityWarnings.value = warnings.cast<String>();
+    }
+
+    // Receive outside location flag
+    if (args != null && args['isOutsideLocation'] == true) {
+      isOutsideLocation.value = true;
     }
 
     _checkTodayAttendance();
@@ -83,7 +91,9 @@ class PhotoValidationController extends GetxController {
       // If already checked in but not checked out
       if (attendance.clockOut == null) {
         isClockOut.value = true;
-        AppLogger.info('PhotoValidation: User can clock out, validating time...');
+        AppLogger.info(
+          'PhotoValidation: User can clock out, validating time...',
+        );
         _checkIfCanClockOut();
       } else {
         AppLogger.info('PhotoValidation: User already checked out today');
@@ -131,7 +141,10 @@ class PhotoValidationController extends GetxController {
         Future.delayed(const Duration(minutes: 1), _validateClockOutTime);
       }
     } catch (e) {
-      AppLogger.error('PhotoValidation: NTP time fetch failed, using device time', e);
+      AppLogger.error(
+        'PhotoValidation: NTP time fetch failed, using device time',
+        e,
+      );
       // If NTP fails, use device time as fallback
       final now = DateTime.now();
       final today = DateTime(now.year, now.month, now.day);
@@ -260,6 +273,7 @@ class PhotoValidationController extends GetxController {
           clockInImage: capturedImage.value!,
           clockInLat: latitude.value,
           clockInLong: longitude.value,
+          status: isOutsideLocation.value ? 'menunggu_konfirmasi' : null,
         );
       }
 

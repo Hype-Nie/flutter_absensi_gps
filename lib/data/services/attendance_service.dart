@@ -20,6 +20,7 @@ class AttendanceService {
     required File clockInImage,
     required double clockInLat,
     required double clockInLong,
+    String? status,
   }) async {
     try {
       AppLogger.info('AttendanceService: Clock in for user ID: $userId');
@@ -54,7 +55,7 @@ class AttendanceService {
       final formattedDate = DateFormat('yyyy-MM-dd').format(tanggal);
 
       // Create multipart form data
-      final formData = FormData.fromMap({
+      final formDataMap = <String, dynamic>{
         'user_id': userId,
         'tanggal': formattedDate,
         'clock_in_image': await MultipartFile.fromFile(
@@ -63,7 +64,13 @@ class AttendanceService {
         ),
         'clock_in_lat': clockInLat.toString(),
         'clock_in_long': clockInLong.toString(),
-      });
+      };
+
+      if (status != null && status.isNotEmpty) {
+        formDataMap['status'] = status;
+      }
+
+      final formData = FormData.fromMap(formDataMap);
 
       final imageSize = await clockInImage.length();
       AppLogger.info('AttendanceService: Sending clock-in request');
@@ -227,6 +234,66 @@ class AttendanceService {
     } catch (e, stackTrace) {
       AppLogger.error(
         'AttendanceService: Clock-out unexpected error',
+        e,
+        stackTrace,
+      );
+      return ClockInResult.failure('Terjadi kesalahan: ${e.toString()}');
+    }
+  }
+
+  /// Update attendance status (admin only)
+  /// PUT /absensi/{id}
+  Future<ClockInResult> updateStatus({
+    required int id,
+    required String status,
+    required int lateDuration,
+  }) async {
+    try {
+      AppLogger.info(
+        'AttendanceService: Updating status for attendance ID: $id to $status',
+      );
+
+      final body = {'status': status, 'late_duration': lateDuration};
+
+      final response = await _apiProvider.put('/absensi/$id', data: body);
+
+      AppLogger.info(
+        'AttendanceService: Update status response: ${response.statusCode}',
+      );
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        final data = response.data as Map<String, dynamic>;
+
+        if (data['success'] == true) {
+          final attendanceData = data['data'] as Map<String, dynamic>;
+          final attendance = AttendanceHistoryModel.fromJson(attendanceData);
+
+          AppLogger.info(
+            'AttendanceService: Status updated successfully to ${attendance.status}',
+          );
+
+          return ClockInResult.success(attendance);
+        }
+
+        final message = data['message'] ?? 'Gagal mengubah status';
+        AppLogger.error('AttendanceService: Update status failed: $message');
+        return ClockInResult.failure(message);
+      }
+
+      return ClockInResult.failure('Gagal mengubah status');
+    } on DioException catch (e) {
+      AppLogger.error('AttendanceService: Update status DioException', e);
+
+      if (e.response != null) {
+        AppLogger.error('Response status: ${e.response?.statusCode}');
+        AppLogger.error('Response data: ${e.response?.data}');
+      }
+
+      final errorMessage = _handleClockInException(e);
+      return ClockInResult.failure(errorMessage);
+    } catch (e, stackTrace) {
+      AppLogger.error(
+        'AttendanceService: Update status unexpected error',
         e,
         stackTrace,
       );
@@ -706,7 +773,9 @@ class AttendanceService {
       final startStr = DateFormat('yyyy-MM-dd').format(startDate);
       // Add 1 day to end date for API (API uses < comparison, not <=)
       // This ensures records on the end date are included
-      final endStr = DateFormat('yyyy-MM-dd').format(endDate.add(const Duration(days: 1)));
+      final endStr = DateFormat(
+        'yyyy-MM-dd',
+      ).format(endDate.add(const Duration(days: 1)));
 
       final queryParams = <String, dynamic>{
         'start_date': startStr,
@@ -762,7 +831,9 @@ class AttendanceService {
                   // For date range, we need to fetch all pages
                   // Using the same endpoint with page parameter
                   final pageEndpoint = '$queryString&page=$p';
-                  final pageResponse = await _apiProvider.get('/absensi?$pageEndpoint');
+                  final pageResponse = await _apiProvider.get(
+                    '/absensi?$pageEndpoint',
+                  );
 
                   if (pageResponse.statusCode == 200) {
                     final pageData = pageResponse.data as Map<String, dynamic>;
@@ -933,7 +1004,9 @@ class AttendanceService {
       if (response.data is Map) {
         final errorData = response.data as Map;
         final message = errorData['message'] ?? 'Gagal mengekspor CSV';
-        AppLogger.error('AttendanceService: API returned JSON error: $errorData');
+        AppLogger.error(
+          'AttendanceService: API returned JSON error: $errorData',
+        );
         return ExportResult.failure('API Error: $message');
       }
 
@@ -948,7 +1021,8 @@ class AttendanceService {
 
         // Validate CSV content (should start with ID,NPK or similar CSV header)
         if (bytes.length >= 3) {
-          final header = String.fromCharCode(bytes[0]) +
+          final header =
+              String.fromCharCode(bytes[0]) +
               String.fromCharCode(bytes[1]) +
               String.fromCharCode(bytes[2]);
           AppLogger.info('AttendanceService: CSV header starts with: $header');
@@ -957,13 +1031,23 @@ class AttendanceService {
         return ExportResult.success(bytes, 'csv');
       }
 
-      return ExportResult.failure('Gagal mengekspor CSV. Status: ${response.statusCode}');
+      return ExportResult.failure(
+        'Gagal mengekspor CSV. Status: ${response.statusCode}',
+      );
     } on DioException catch (e) {
       final errorMessage = _handleDioException(e);
-      AppLogger.error('AttendanceService: Export CSV DioException', e, e.stackTrace);
+      AppLogger.error(
+        'AttendanceService: Export CSV DioException',
+        e,
+        e.stackTrace,
+      );
       return ExportResult.failure(errorMessage);
     } catch (e, stackTrace) {
-      AppLogger.error('AttendanceService: Export CSV unexpected error', e, stackTrace);
+      AppLogger.error(
+        'AttendanceService: Export CSV unexpected error',
+        e,
+        stackTrace,
+      );
       return ExportResult.failure('Terjadi kesalahan: ${e.toString()}');
     }
   }
@@ -1033,7 +1117,9 @@ class AttendanceService {
       if (response.data is Map) {
         final errorData = response.data as Map;
         final message = errorData['message'] ?? 'Gagal mengekspor PDF';
-        AppLogger.error('AttendanceService: API returned JSON error: $errorData');
+        AppLogger.error(
+          'AttendanceService: API returned JSON error: $errorData',
+        );
         return ExportResult.failure('API Error: $message');
       }
 
@@ -1045,26 +1131,41 @@ class AttendanceService {
 
         // Validate PDF file signature (PDF files start with %PDF)
         if (bytes.length >= 4) {
-          final signature = String.fromCharCode(bytes[0]) +
+          final signature =
+              String.fromCharCode(bytes[0]) +
               String.fromCharCode(bytes[1]) +
               String.fromCharCode(bytes[2]) +
               String.fromCharCode(bytes[3]);
           if (signature != '%PDF') {
-            AppLogger.error('AttendanceService: Invalid PDF file signature: $signature');
-            return ExportResult.failure('File tidak valid. Server mungkin mengembalikan error.');
+            AppLogger.error(
+              'AttendanceService: Invalid PDF file signature: $signature',
+            );
+            return ExportResult.failure(
+              'File tidak valid. Server mungkin mengembalikan error.',
+            );
           }
         }
 
         return ExportResult.success(bytes, 'pdf');
       }
 
-      return ExportResult.failure('Gagal mengekspor PDF. Status: ${response.statusCode}');
+      return ExportResult.failure(
+        'Gagal mengekspor PDF. Status: ${response.statusCode}',
+      );
     } on DioException catch (e) {
       final errorMessage = _handleDioException(e);
-      AppLogger.error('AttendanceService: Export PDF DioException', e, e.stackTrace);
+      AppLogger.error(
+        'AttendanceService: Export PDF DioException',
+        e,
+        e.stackTrace,
+      );
       return ExportResult.failure(errorMessage);
     } catch (e, stackTrace) {
-      AppLogger.error('AttendanceService: Export PDF unexpected error', e, stackTrace);
+      AppLogger.error(
+        'AttendanceService: Export PDF unexpected error',
+        e,
+        stackTrace,
+      );
       return ExportResult.failure('Terjadi kesalahan: ${e.toString()}');
     }
   }
@@ -1136,11 +1237,7 @@ class ExportResult {
   });
 
   factory ExportResult.success(List<int> data, String extension) {
-    return ExportResult._(
-      data: data,
-      isSuccess: true,
-      extension: extension,
-    );
+    return ExportResult._(data: data, isSuccess: true, extension: extension);
   }
 
   factory ExportResult.failure(String error) {

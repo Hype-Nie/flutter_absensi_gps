@@ -104,10 +104,14 @@ class AdminDashboardController extends GetxController
         // Build attendance list untuk display - SEMUA data tanpa batasan
         attendanceList.value = attendances.map((a) {
           return DashboardAttendanceModel(
+            id: a.id,
             name: a.user?.name ?? 'Unknown',
             npk: a.user?.npk ?? '',
             date: DateFormat('dd/MM/yyyy').format(a.tanggal.toLocal()),
-            jamMasuk: a.clockIn.substring(0, 5), // HH:mm
+            jamMasuk: a.clockIn.isNotEmpty ? a.clockIn.substring(0, 5) : '-',
+            jamKeluar: a.clockOut != null && a.clockOut!.isNotEmpty
+                ? a.clockOut!.substring(0, 5)
+                : '-',
             status: _formatStatusDisplay(a.status),
             clockInImageUrl: a.clockInImageUrl,
             clockOutImageUrl: a.clockOutImageUrl,
@@ -157,6 +161,10 @@ class AdminDashboardController extends GetxController
         return 'Izin';
       case 'sakit':
         return 'Sakit';
+      case 'menunggu_konfirmasi':
+        return 'Menunggu Konfirmasi';
+      case 'alpha':
+        return 'Alpha';
       default:
         return status;
     }
