@@ -28,7 +28,7 @@ class HistoryController extends GetxController {
   final currentPage = 1.obs;
   final perPage = 10; // API returns 10 items per page
 
-  final filters = ['Semua', 'Hadir', 'Terlambat', 'Izin', 'Sakit', 'Alpha'];
+  final filters = ['Semua', 'Hadir', 'Terlambat', 'Izin', 'Sakit'];
 
   final ScrollController scrollController = ScrollController();
 

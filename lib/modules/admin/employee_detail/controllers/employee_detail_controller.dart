@@ -12,7 +12,15 @@ class EmployeeDetailController extends GetxController {
 
   final employee = Rxn<Map<String, dynamic>>();
   final selectedFilter = 'Semua'.obs;
-  final filters = ['Semua', 'Hadir', 'Terlambat', 'Izin', 'Sakit', 'Alpha'];
+  final filters = [
+    'Semua',
+    'Hadir',
+    'Terlambat',
+    'Izin',
+    'Sakit',
+    'Alpha',
+    'Menunggu Konfirmasi',
+  ];
   final attendanceHistory = <AttendanceHistoryModel>[].obs;
   final isLoadingAttendance = false.obs;
 

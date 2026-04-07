@@ -23,6 +23,8 @@ import '../modules/admin/employee_form/bindings/employee_form_binding.dart';
 import '../modules/admin/employee_form/views/employee_form_view.dart';
 import '../modules/admin/reports/bindings/reports_binding.dart';
 import '../modules/admin/reports/views/reports_view.dart';
+import '../modules/admin/attendance_detail/bindings/attendance_detail_binding.dart';
+import '../modules/admin/attendance_detail/views/attendance_detail_view.dart';
 import 'app_routes.dart';
 
 class AppPages {
@@ -100,6 +102,11 @@ class AppPages {
       name: AppRoutes.adminReports,
       page: () => const ReportsView(),
       binding: ReportsBinding(),
+    ),
+    GetPage(
+      name: AppRoutes.adminAttendanceDetail,
+      page: () => const AttendanceDetailView(),
+      binding: AttendanceDetailBinding(),
     ),
   ];
 }

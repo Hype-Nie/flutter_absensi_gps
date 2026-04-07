@@ -1,5 +1,6 @@
 /// Attendance item model for dashboard display
 class DashboardAttendanceModel {
+  final int? id;
   final String name;
   final String npk;
   final String date;
@@ -10,6 +11,7 @@ class DashboardAttendanceModel {
   final String? clockOutImageUrl;
 
   DashboardAttendanceModel({
+    this.id,
     required this.name,
     this.npk = '',
     required this.date,
@@ -22,6 +24,9 @@ class DashboardAttendanceModel {
 
   factory DashboardAttendanceModel.fromJson(Map<String, dynamic> json) {
     return DashboardAttendanceModel(
+      id: json['id'] is int
+          ? json['id']
+          : (json['id'] != null ? int.parse(json['id'].toString()) : null),
       name: json['name'] ?? '',
       npk: json['npk'] ?? '',
       date: json['date'] ?? '',
@@ -35,6 +40,7 @@ class DashboardAttendanceModel {
 
   Map<String, dynamic> toJson() {
     return {
+      'id': id,
       'name': name,
       'npk': npk,
       'date': date,
