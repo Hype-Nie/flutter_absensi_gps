@@ -9,7 +9,7 @@ class AppRoutes {
   static const employeeHistory = '/employee/history';
   static const employeeProfile = '/employee/profile';
   static const employeeGpsValidation = '/employee/gps-validation';
-  static const employeePhotoValidation = '/employee/photo-validation';
+  static const employeeFaceVerification = '/employee/face-verification';
   static const employeeAttendanceSuccess = '/employee/attendance-success';
 
   // Admin Routes

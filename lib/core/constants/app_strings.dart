@@ -1,6 +1,6 @@
 class AppStrings {
   // App
-  static const String appName = 'Absensi GPS';
+  static const String appName = 'Perhutani Padangan';
   static const String appVersion = '1.0.0';
   
   // General

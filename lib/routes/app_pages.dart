@@ -7,8 +7,8 @@ import '../modules/employee/dashboard/bindings/employee_dashboard_binding.dart';
 import '../modules/employee/dashboard/views/employee_dashboard_view.dart';
 import '../modules/employee/gps_validation/bindings/gps_validation_binding.dart';
 import '../modules/employee/gps_validation/views/gps_validation_view.dart';
-import '../modules/employee/photo_validation/bindings/photo_validation_binding.dart';
-import '../modules/employee/photo_validation/views/photo_validation_view.dart';
+import '../modules/employee/face_verification/bindings/face_verification_binding.dart';
+import '../modules/employee/face_verification/views/face_verification_view.dart';
 import '../modules/employee/attendance_success/bindings/attendance_success_binding.dart';
 import '../modules/employee/attendance_success/views/attendance_success_view.dart';
 import '../modules/employee/history/bindings/history_binding.dart';
@@ -57,9 +57,9 @@ class AppPages {
       binding: GpsValidationBinding(),
     ),
     GetPage(
-      name: AppRoutes.employeePhotoValidation,
-      page: () => const PhotoValidationView(),
-      binding: PhotoValidationBinding(),
+      name: AppRoutes.employeeFaceVerification,
+      page: () => const FaceVerificationView(),
+      binding: FaceVerificationBinding(),
     ),
     GetPage(
       name: AppRoutes.employeeAttendanceSuccess,

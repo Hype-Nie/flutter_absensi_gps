@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../controllers/admin_dashboard_controller.dart';
@@ -13,10 +14,15 @@ class AdminDashboardView extends GetView<AdminDashboardController> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppColors.grey100,
-      body: SafeArea(
-        child: Column(
+    return AnnotatedRegion<SystemUiOverlayStyle>(
+      value: SystemUiOverlayStyle.light.copyWith(
+        statusBarColor: Colors.transparent,
+      ),
+      child: Scaffold(
+        backgroundColor: AppColors.grey100,
+        body: SafeArea(
+          top: false,
+          child: Column(
           children: [
             const AdminDashboardHeader(),
             Expanded(
@@ -50,6 +56,7 @@ class AdminDashboardView extends GetView<AdminDashboardController> {
                 ),
               )
             : const SizedBox.shrink(),
+      ),
       ),
     );
   }
