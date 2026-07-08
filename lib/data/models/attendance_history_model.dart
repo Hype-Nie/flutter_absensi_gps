@@ -106,8 +106,6 @@ class AttendanceHistoryModel {
         return 'Izin';
       case 'sakit':
         return 'Sakit';
-      case 'alpha':
-        return 'Alpha';
       case 'menunggu_konfirmasi':
         return 'Menunggu Konfirmasi';
       default:

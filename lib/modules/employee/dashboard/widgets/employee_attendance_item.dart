@@ -17,8 +17,6 @@ class EmployeeAttendanceItem extends StatelessWidget {
         return AppColors.error;
       case 'izin':
         return AppColors.warning;
-      case 'alpha':
-        return AppColors.grey600;
       case 'menunggu_konfirmasi':
         return AppColors.info;
       default:

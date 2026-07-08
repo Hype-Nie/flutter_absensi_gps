@@ -324,9 +324,6 @@ class EmployeeDetailView extends GetView<EmployeeDetailController> {
       case 'menunggu_konfirmasi':
         statusColor = AppColors.info;
         break;
-      case 'alpha':
-        statusColor = Colors.grey;
-        break;
       default:
         statusColor = Colors.grey;
     }

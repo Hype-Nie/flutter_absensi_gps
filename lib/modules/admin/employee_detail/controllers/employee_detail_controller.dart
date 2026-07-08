@@ -18,7 +18,6 @@ class EmployeeDetailController extends GetxController {
     'Terlambat',
     'Izin',
     'Sakit',
-    'Alpha',
     'Menunggu Konfirmasi',
   ];
   final attendanceHistory = <AttendanceHistoryModel>[].obs;
