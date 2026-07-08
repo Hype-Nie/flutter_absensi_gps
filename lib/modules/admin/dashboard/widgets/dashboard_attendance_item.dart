@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import '../../../../../../core/constants/app_colors.dart';
 import '../../../../../../data/models/dashboard_attendance_model.dart';
 import '../../../../../../routes/app_routes.dart';
+import '../controllers/admin_dashboard_controller.dart';
 
 class DashboardAttendanceItem extends StatelessWidget {
   final DashboardAttendanceModel attendance;
@@ -21,19 +22,23 @@ class DashboardAttendanceItem extends StatelessWidget {
         return AppColors.warning;
       case 'Menunggu Konfirmasi':
         return AppColors.info;
-      case 'Alpha':
-        return AppColors.grey600;
       default:
         return AppColors.grey600;
     }
   }
 
-  void _onTap() {
+  void _onTap() async {
     if (attendance.id != null && attendance.id! > 0) {
-      Get.toNamed(
+      await Get.toNamed(
         AppRoutes.adminAttendanceDetail,
         arguments: {'attendanceId': attendance.id},
       );
+      // Auto update dashboard when returning
+      if (Get.isRegistered<AdminDashboardController>()) {
+        final controller = Get.find<AdminDashboardController>();
+        controller.loadDashboardData();
+        controller.loadReports();
+      }
     }
   }
 

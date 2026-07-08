@@ -288,9 +288,6 @@ class HistoryView extends GetView<HistoryController> {
       case 'izin':
         statusColor = AppColors.info;
         break;
-      case 'alpha':
-        statusColor = AppColors.grey600;
-        break;
       default:
         statusColor = AppColors.grey600;
     }

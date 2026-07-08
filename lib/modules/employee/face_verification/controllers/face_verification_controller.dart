@@ -238,23 +238,35 @@ class FaceVerificationController extends GetxController {
       todayAttendance.value = att;
       if (att.clockOut == null) {
         isClockOut.value = true;
-        await _validateClockOutTime();
       }
     }
+    await _validateTimeBounds();
   }
 
-  Future<void> _validateClockOutTime() async {
+  Future<void> _validateTimeBounds() async {
     try {
       final now = await _securityService.getAccurateTime();
-      final nineAM = DateTime(now.year, now.month, now.day, 9);
-      if (now.isAfter(nineAM) || now.isAtSameMomentAs(nineAM)) {
-        canSubmit.value = true;
-      } else {
+      
+      // Upper bound check: blocked if > 17:00 (17:01 onwards)
+      if (now.hour > 17 || (now.hour == 17 && now.minute > 0)) {
         canSubmit.value = false;
-        timeUntilCanSubmit.value =
-            'Clock out hanya bisa setelah jam 09:00. Tunggu ${nineAM.difference(now).inMinutes} menit lagi';
-        Future.delayed(const Duration(minutes: 1), _validateClockOutTime);
+        timeUntilCanSubmit.value = 'Batas absensi hari ini sudah berakhir (maks 17:00)';
+        return;
       }
+
+      // Lower bound check for clock out
+      if (isClockOut.value) {
+        final nineAM = DateTime(now.year, now.month, now.day, 9);
+        if (now.isBefore(nineAM)) {
+          canSubmit.value = false;
+          timeUntilCanSubmit.value =
+              'Clock out hanya bisa setelah jam 09:00. Tunggu ${nineAM.difference(now).inMinutes} menit lagi';
+          Future.delayed(const Duration(minutes: 1), _validateTimeBounds);
+          return;
+        }
+      }
+      
+      canSubmit.value = true;
     } catch (_) {
       canSubmit.value = true; // NTP fail → allow (SecurityService handles logging)
     }
@@ -262,6 +274,10 @@ class FaceVerificationController extends GetxController {
 
   Future<void> submitAttendance() async {
     if (capturedImage.value == null) return;
+    
+    // Double check time bounds just before submit
+    await _validateTimeBounds();
+    
     if (!canSubmit.value) {
       Get.snackbar('Perhatian', timeUntilCanSubmit.value,
           backgroundColor: AppColors.warning, colorText: Colors.white);

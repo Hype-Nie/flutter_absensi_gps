@@ -333,6 +333,7 @@ class AdminReportsPage extends StatelessWidget {
                     DropdownMenuItem(value: 'terlambat', child: Text('Terlambat')),
                     DropdownMenuItem(value: 'izin', child: Text('Izin')),
                     DropdownMenuItem(value: 'sakit', child: Text('Sakit')),
+                    DropdownMenuItem(value: 'menunggu_konfirmasi', child: Text('Menunggu Konfirmasi')),
                   ],
                   onChanged: (value) {
                     controller.onStatusFilterChanged(value);

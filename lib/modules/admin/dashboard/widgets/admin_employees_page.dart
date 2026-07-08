@@ -26,6 +26,7 @@ class AdminEmployeesPage extends StatelessWidget {
               color: AppColors.primary,
               backgroundColor: AppColors.surface,
               child: SingleChildScrollView(
+                physics: const AlwaysScrollableScrollPhysics(),
                 padding: const EdgeInsets.symmetric(horizontal: 16),
                 child: _buildEmployeeList(controller),
               ),

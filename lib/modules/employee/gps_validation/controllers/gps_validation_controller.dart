@@ -22,7 +22,6 @@ class GpsValidationController extends GetxController {
   final nearestPoint = Rxn<LocationPoint>();
   final distanceToNearest = 0.0.obs;
 
-  // Security status
   final isSecurityChecking = false.obs;
   final securityWarnings = <String>[].obs;
 
@@ -40,7 +39,7 @@ class GpsValidationController extends GetxController {
     // LocationPoint(name: 'Lokasi 1', position: LatLng(-8.151595, 113.734986)),
     // -8.146741853572067, 113.68633453931135s
     LocationPoint(name: 'Lokasi 1', position: LatLng(-7.15162, 111.60486)),
-    LocationPoint(name: 'Lokasi 2', position: LatLng(-8.146741, 113.686334)),
+    // LocationPoint(name: 'Lokasi 2', position: LatLng(-8.146741, 113.686334)),
     LocationPoint(name: 'Lokasi 3', position: LatLng(-8.151595, 113.734986)),
     LocationPoint(name: 'Lokasi 4', position: LatLng(-8.17268, 113.68994)),
     LocationPoint(name: 'Lokasi 5', position: LatLng(-7.2595, 112.7540)),

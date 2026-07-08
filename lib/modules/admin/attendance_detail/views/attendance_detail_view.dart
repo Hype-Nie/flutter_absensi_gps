@@ -565,8 +565,6 @@ class AttendanceDetailView extends GetView<AttendanceDetailController> {
         return AppColors.error;
       case 'izin':
         return AppColors.orange;
-      case 'alpha':
-        return AppColors.grey600;
       case 'menunggu_konfirmasi':
         return AppColors.info;
       default:

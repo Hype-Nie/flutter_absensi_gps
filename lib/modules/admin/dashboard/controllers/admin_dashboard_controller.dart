@@ -157,8 +157,6 @@ class AdminDashboardController extends GetxController
         return 'Sakit';
       case 'menunggu_konfirmasi':
         return 'Menunggu Konfirmasi';
-      case 'alpha':
-        return 'Alpha';
       default:
         return status;
     }

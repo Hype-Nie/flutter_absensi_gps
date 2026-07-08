@@ -22,6 +22,7 @@ class AttendanceDetailController extends GetxController {
     {'value': 'terlambat', 'label': 'Terlambat'},
     {'value': 'izin', 'label': 'Izin'},
     {'value': 'sakit', 'label': 'Sakit'},
+    {'value': 'menunggu_konfirmasi', 'label': 'Menunggu Konfirmasi'},
   ];
 
   @override
