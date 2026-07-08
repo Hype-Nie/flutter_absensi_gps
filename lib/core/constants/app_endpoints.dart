@@ -6,6 +6,7 @@ class AppEndpoints {
 
   // Auth Endpoints
   static const String login = '/login';
+  static const String faceLogin = '/login/face';
   static const String register = '/register';
   static const String logout = '/logout';
   static const String refreshToken = '/refresh';

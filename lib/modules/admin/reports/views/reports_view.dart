@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../controllers/reports_controller.dart';
@@ -8,16 +9,21 @@ class ReportsView extends GetView<ReportsController> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.grey[100],
-      body: SafeArea(
-        child: Column(
-          children: [
-            _buildHeader(),
-            Expanded(
-              child: RefreshIndicator(
-                onRefresh: controller.refreshData,
-                color: AppColors.primary,
+    return AnnotatedRegion<SystemUiOverlayStyle>(
+      value: SystemUiOverlayStyle.light.copyWith(
+        statusBarColor: Colors.transparent,
+      ),
+      child: Scaffold(
+        backgroundColor: Colors.grey[100],
+        body: SafeArea(
+          top: false,
+          child: Column(
+            children: [
+              _buildHeader(context),
+              Expanded(
+                child: RefreshIndicator(
+                  onRefresh: controller.refreshData,
+                  color: AppColors.primary,
                 backgroundColor: Colors.white,
                 child: SingleChildScrollView(
                   physics: const AlwaysScrollableScrollPhysics(),
@@ -39,13 +45,19 @@ class ReportsView extends GetView<ReportsController> {
           ],
         ),
       ),
-    );
+    ),
+  );
   }
 
-  Widget _buildHeader() {
+  Widget _buildHeader(BuildContext context) {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(20),
+      padding: EdgeInsets.only(
+        top: MediaQuery.paddingOf(context).top + 20,
+        left: 20,
+        right: 20,
+        bottom: 20,
+      ),
       decoration: const BoxDecoration(
         color: AppColors.primary,
         borderRadius: BorderRadius.only(

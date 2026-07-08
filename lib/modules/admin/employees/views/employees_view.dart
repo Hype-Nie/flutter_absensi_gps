@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../data/models/employee_model.dart';
@@ -9,15 +10,20 @@ class EmployeesView extends GetView<EmployeesController> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppColors.grey100,
-      body: SafeArea(
-        child: Column(
-          children: [
-            _buildHeader(),
-            Expanded(
-              child: Obx(
-                () => controller.isLoading.value
+    return AnnotatedRegion<SystemUiOverlayStyle>(
+      value: SystemUiOverlayStyle.light.copyWith(
+        statusBarColor: Colors.transparent,
+      ),
+      child: Scaffold(
+        backgroundColor: AppColors.grey100,
+        body: SafeArea(
+          top: false,
+          child: Column(
+            children: [
+              _buildHeader(context),
+              Expanded(
+                child: Obx(
+                  () => controller.isLoading.value
                     ? _buildLoadingState()
                     : RefreshIndicator(
                         onRefresh: () => controller.refreshData(),
@@ -52,13 +58,19 @@ class EmployeesView extends GetView<EmployeesController> {
           ),
         ),
       ),
-    );
+    ),
+  );
   }
 
-  Widget _buildHeader() {
+  Widget _buildHeader(BuildContext context) {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(20),
+      padding: EdgeInsets.only(
+        top: MediaQuery.paddingOf(context).top + 20,
+        left: 20,
+        right: 20,
+        bottom: 20,
+      ),
       decoration: const BoxDecoration(
         color: AppColors.primary,
         borderRadius: BorderRadius.only(

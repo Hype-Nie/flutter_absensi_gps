@@ -12,7 +12,12 @@ class AdminDashboardHeader extends StatelessWidget {
 
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(20),
+      padding: EdgeInsets.only(
+        top: MediaQuery.paddingOf(context).top + 20,
+        left: 20,
+        right: 20,
+        bottom: 20,
+      ),
       decoration: const BoxDecoration(
         color: AppColors.primary,
         borderRadius: BorderRadius.only(

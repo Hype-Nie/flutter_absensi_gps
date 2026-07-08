@@ -38,8 +38,9 @@ class GpsValidationController extends GetxController {
   // 10 predefined location points - User akan sesuaikan koordinatnya nanti
   final List<LocationPoint> validationPoints = const [
     // LocationPoint(name: 'Lokasi 1', position: LatLng(-8.151595, 113.734986)),
+    // -8.146741853572067, 113.68633453931135s
     LocationPoint(name: 'Lokasi 1', position: LatLng(-7.15162, 111.60486)),
-    LocationPoint(name: 'Lokasi 2', position: LatLng(-8.146722, 114.686282)),
+    LocationPoint(name: 'Lokasi 2', position: LatLng(-8.146741, 113.686334)),
     LocationPoint(name: 'Lokasi 3', position: LatLng(-8.151595, 113.734986)),
     LocationPoint(name: 'Lokasi 4', position: LatLng(-8.17268, 113.68994)),
     LocationPoint(name: 'Lokasi 5', position: LatLng(-7.2595, 112.7540)),
@@ -174,7 +175,7 @@ class GpsValidationController extends GetxController {
 
       Future.delayed(const Duration(seconds: 2), () {
         Get.toNamed(
-          AppRoutes.employeePhotoValidation,
+          AppRoutes.employeeFaceVerification,
           arguments: {
             'type': attendanceType.value,
             'latitude': currentPosition.value!.latitude,
@@ -238,7 +239,7 @@ class GpsValidationController extends GetxController {
               Get.back(closeOverlays: true);
               isOutsideLocation.value = true;
               Get.toNamed(
-                AppRoutes.employeePhotoValidation,
+                AppRoutes.employeeFaceVerification,
                 arguments: {
                   'type': attendanceType.value,
                   'latitude': currentPosition.value!.latitude,

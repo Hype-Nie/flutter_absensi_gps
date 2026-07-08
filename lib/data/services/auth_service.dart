@@ -1,5 +1,6 @@
+import 'dart:io';
 import 'package:dio/dio.dart';
-import 'package:get/get.dart';
+import 'package:get/get.dart' hide FormData, MultipartFile;
 import '../models/user_model.dart';
 import '../providers/api_provider.dart';
 import '../../core/constants/app_endpoints.dart';
@@ -107,6 +108,34 @@ class AuthService extends GetxService {
     } catch (e, stackTrace) {
       AppLogger.error('AuthService: Unexpected error during login', e, stackTrace);
       rethrow;
+    }
+  }
+
+  // ponytail: minimum face login verification, no token save
+  Future<(bool, String?)> verifyFace(File image) async {
+    try {
+      final npk = currentUser.value?.npk;
+      if (npk == null) return (false, 'NPK not found');
+
+      final formData = FormData.fromMap({
+        'npk': npk,
+        'image': await MultipartFile.fromFile(image.path, filename: 'face.jpg'),
+      });
+
+      final response = await _apiProvider.post(
+        AppEndpoints.faceLogin,
+        data: formData,
+      );
+
+      final bool success = response.data['success'] ?? false;
+      if (!success) return (false, response.data['message']?.toString());
+      
+      return (true, null);
+    } on DioException catch (e) {
+      final msg = e.response?.data?['message']?.toString() ?? 'Gagal memverifikasi wajah';
+      return (false, msg);
+    } catch (e) {
+      return (false, e.toString());
     }
   }
 

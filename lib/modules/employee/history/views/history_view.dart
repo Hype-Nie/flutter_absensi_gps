@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/widgets/app_footer.dart';
@@ -11,10 +12,14 @@ class HistoryView extends GetView<HistoryController> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppColors.surface,
-      body: SafeArea(
-        child: Column(
+    return AnnotatedRegion<SystemUiOverlayStyle>(
+      value: SystemUiOverlayStyle.dark.copyWith(
+        statusBarColor: Colors.transparent,
+      ),
+      child: Scaffold(
+        backgroundColor: AppColors.surface,
+        body: SafeArea(
+          child: Column(
           children: [
             // Header
             Padding(
@@ -224,7 +229,8 @@ class HistoryView extends GetView<HistoryController> {
           ],
         ),
       ),
-    );
+    ),
+  );
   }
 
   Widget _buildStatCard({
