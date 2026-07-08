@@ -33,7 +33,7 @@ class GpsValidationController extends GetxController {
   final isOutsideLocation = false.obs;
 
   // Validation radius in meters
-  final double validationRadius = 200.0;
+  final double validationRadius = 400.0;
 
   // 10 predefined location points - User akan sesuaikan koordinatnya nanti
   final List<LocationPoint> validationPoints = const [
@@ -48,6 +48,7 @@ class GpsValidationController extends GetxController {
     LocationPoint(name: 'Lokasi 8', position: LatLng(-7.2610, 112.7555)),
     LocationPoint(name: 'Lokasi 9', position: LatLng(-7.2615, 112.7560)),
     LocationPoint(name: 'Lokasi 10', position: LatLng(-7.2620, 112.7565)),
+    LocationPoint(name: 'Lokasi 11', position: LatLng(-7.2977, 112.7667)),
   ];
 
   @override
